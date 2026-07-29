@@ -98,7 +98,8 @@
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;    
+    justify-content:space-between;    /* space-between */
+    min-width: 250px;
 }
 
 .navbar-logo {
@@ -145,7 +146,7 @@
 .navbar-actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm); /* md */
 }
 
 .search-toggle {
