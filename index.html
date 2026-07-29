@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aplicación de películas usando la API de TMDB">
+    <title>TMDB Movie App</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="preconnect" href="https://image.tmdb.org">
+    <link rel="preconnect" href="https://api.themoviedb.org">
+</head>
+<body data-theme="dark">
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <a href="#home" class="navbar-logo" data-link>
+                <span class="logo-icon">🎬</span>
+                <span class="logo-text">MovieApp</span>
+            </a>
+            
+            <div class="navbar-menu" id="navbarMenu">
+                <a href="#home" class="nav-link" data-link>Inicio</a>
+                <a href="#search" class="nav-link" data-link>Buscar</a>
+                <a href="#favorites" class="nav-link" data-link>Favoritos</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <div class="search-toggle" id="searchToggle">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="menu-toggle" id="menuToggle" aria-label="Menú">
+                    <span class="hamburger"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Bar (Collapsible) -->
+    <div class="search-bar-container" id="searchBarContainer">
+        <div class="search-bar">
+            <input 
+                type="text" 
+                class="search-input" 
+                id="searchInput" 
+                placeholder="Buscar películas, series, actores..."
+                autocomplete="off"
+            >
+            <!-- <button class="search-button" id="searchButton">
+                <span>X</span>
+            </button> -->
+            <div class="search-suggestions" id="searchSuggestions"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="main-content" id="mainContent">
+        
+        <!-- Home View -->
+        <div class="view" id="homeView" data-view="home">
+            <!-- Hero Section -->
+            <section class="hero" id="heroSection">
+                <div class="hero-background" id="heroBackground"></div>
+                <div class="hero-content-container">
+                    <div class="hero-content">
+                        <h1 class="hero-title" id="heroTitle">Cargando...</h1>
+                        <p class="hero-overview" id="heroOverview"></p>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary" id="heroWatchBtn">
+                                <span>▶</span> Ver Trailer
+                            </button>
+                            <button class="btn btn-secondary" id="heroDetailsBtn">
+                                <span>ℹ</span> Más Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trending Section -->
+            <section class="section" id="trendingSection">
+                <div class="section-header">
+                    <h2 class="section-title">Tendencias</h2>
+                    <div class="section-tabs">
+                        <button class="tab active" data-tab="day" data-section="trending">Hoy</button>
+                        <button class="tab" data-tab="week" data-section="trending">Esta Semana</button>
+                    </div>
+                </div>
+                <div class="movies-grid" id="trendingGrid">
+                    <!-- Skeletons will be rendered here -->
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-footer">
+                    <button class="btn btn-outline" id="trendingLoadMore">Cargar más</button>
+                </div>
+            </section>
+
+            <!-- Popular Movies Section -->
+            <section class="section" id="popularSection">
+                <div class="section-header">
+                    <h2 class="section-title">Películas Populares</h2>
+                    <a href="#search?type=movie&sort=popularity" class="see-all" data-link>Ver todas →</a>
+                </div>
+                <div class="movies-grid" id="popularGrid">
+                    <!-- Skeletons -->
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-footer">
+                    <button class="btn btn-outline" id="popularLoadMore">Cargar más</button>
+                </div>
+            </section>
+
+            <!-- Top Rated Section -->
+            <section class="section" id="topRatedSection">
+                <div class="section-header">
+                    <h2 class="section-title">Mejor Calificadas</h2>
+                    <a href="#search?type=movie&sort=vote_average" class="see-all" data-link>Ver todas →</a>
+                </div>
+                <div class="movies-grid" id="topRatedGrid">
+                    <!-- Skeletons -->
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-footer">
+                    <button class="btn btn-outline" id="topRatedLoadMore">Cargar más</button>
+                </div>
+            </section>
+
+            <!-- Upcoming Section -->
+            <section class="section" id="upcomingSection">
+                <div class="section-header">
+                    <h2 class="section-title">Próximos Estrenos</h2>
+                    <a href="#search?type=movie&sort=release_date" class="see-all" data-link>Ver todas →</a>
+                </div>
+                <div class="movies-grid" id="upcomingGrid">
+                    <!-- Skeletons -->
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                    <div class="movie-card skeleton">
+                        <div class="movie-poster skeleton-poster"></div>
+                        <div class="movie-info">
+                            <div class="movie-title skeleton-text"></div>
+                            <div class="movie-meta skeleton-text"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-footer">
+                    <button class="btn btn-outline" id="upcomingLoadMore">Cargar más</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Movie Detail View -->
+        <div class="view hidden" id="movieDetailView" data-view="movie-detail">
+            <div class="movie-detail-container" id="movieDetailContainer">
+                <!-- Content will be dynamically loaded -->
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Cargando detalles...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search View -->
+        <div class="view hidden" id="searchView" data-view="search">
+            <div class="search-container">
+                <div class="search-header">
+                    <h1 class="search-title" id="searchTitle">Resultados de búsqueda</h1>
+                    <div class="search-filters">
+                        <button class="filter-btn active" data-filter="all" data-type="all">Todos</button>
+                        <button class="filter-btn" data-filter="movie" data-type="movie">Películas</button>
+                        <button class="filter-btn" data-filter="tv" data-type="tv">Series</button>
+                        <button class="filter-btn" data-filter="person" data-type="person">Actores</button>
+                    </div>
+                </div>
+                
+                <div class="search-history" id="searchHistory">
+                    <h3>Búsquedas recientes</h3>
+                    <div class="history-list" id="historyList"></div>
+                    <button class="btn btn-text" id="clearHistory">Limpiar historial</button>
+                </div>
+
+                <div class="search-results" id="searchResults">
+                    <!-- Results will be rendered here -->
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <h3>Busca tu película favorita</h3>
+                        <p>Usa la barra de búsqueda para encontrar películas, series y actores</p>
+                    </div>
+                </div>
+
+                <div class="search-pagination" id="searchPagination">
+                    <button class="btn btn-outline" id="searchPrevPage" disabled>← Anterior</button>
+                    <span class="page-info" id="pageInfo">Página 1</span>
+                    <button class="btn btn-outline" id="searchNextPage" disabled>Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorites View -->
+        <div class="view hidden" id="favoritesView" data-view="favorites">
+            <div class="favorites-container">
+                <h1 class="favorites-title">Mis Favoritos</h1>
+                <div class="favorites-grid" id="favoritesGrid">
+                    <div class="empty-state">
+                        <div class="empty-icon">❤️</div>
+                        <h3>No tienes favoritos aún</h3>
+                        <p>Agrega películas a tus favoritos para verlas aquí</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Trailers -->
+    <div class="modal" id="trailerModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose" aria-label="Cerrar modal">×</button>
+            <div class="modal-body">
+                <div class="video-container" id="videoContainer">
+                    <iframe 
+                        id="trailerIframe" 
+                        src="" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-message" id="toastMessage"></span>
+        <button class="toast-close" id="toastClose">×</button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>MovieApp</h4>
+                    <p>Tu aplicación de películas favorita</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Enlaces</h4>
+                    <a href="#home" data-link>Inicio</a>
+                    <a href="#search" data-link>Buscar</a>
+                    <a href="#favorites" data-link>Favoritos</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Acerca de</h4>
+                    <p>Este producto usa la API de TMDB pero no está avalado ni certificado por TMDB.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 MovieApp. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- Vite will handle the module imports automatically -->
+    <script type="module" src="js/main.js"></script>
+  
+</body>
+</html>

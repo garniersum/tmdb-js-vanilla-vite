@@ -1,0 +1,14 @@
+{
+  "name": "tmdb-js-vanilla",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Aplicación de películas usando la API de TMDB con JavaScript Vanilla",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
