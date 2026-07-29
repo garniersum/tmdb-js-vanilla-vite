@@ -96,8 +96,8 @@
     --container-max-width: 1200px;
     --container-padding: var(--spacing-lg);
     
-    /* Movie Card */
-    --movie-card-width: 200px;
+    /* Movie Card 200 px*/
+    --movie-card-width: 155px;
     --movie-card-height: 300px;
     --movie-card-radius: var(--radius-md);
     
@@ -105,9 +105,9 @@
     --navbar-height: 70px;
     --navbar-bg: rgba(20, 20, 20, 0.95);
     
-    /* Hero */
-    --hero-height: 70vh;
-    --hero-min-height: 500px;
+    /* Hero 70vh  500px*/
+    --hero-height: 40vh;
+    --hero-min-height: 300px;
     --hero-background: linear-gradient(to right, rgba(20, 20, 20, 0.9) 0%, rgba(20, 20, 20, 0.6) 50%, transparent 100%);
 
     /* Movie Detail Header */

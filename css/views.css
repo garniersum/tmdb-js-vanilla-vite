@@ -232,9 +232,10 @@
 .search-results .movies-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: var(--spacing-3xl);
+    gap: var(--spacing-sm);
     padding: var(--spacing-md) 0;
-    overflow: hidden;
+    /* overflow: hidden; */
+    
     /* overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch; */
@@ -316,7 +317,7 @@
     }
     
     .movie-detail-poster {
-        max-width: 300px;
+        max-width: 225px;
         margin: 0 auto;
     }
     
