@@ -146,7 +146,7 @@
 .navbar-actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm); /* md */
+    gap: var(--spacing-sm); /* md */    
 }
 
 .search-toggle {
@@ -190,10 +190,10 @@
 }
 
 .menu-toggle {
-    display: none;
+    display: none; 
     flex-direction: column;
     gap: 4px;
-    padding: var(--spacing-sm);
+    /* padding: var(--spacing-xs); */    
     background: none;
     border: none;
     cursor: pointer;

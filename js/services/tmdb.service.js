@@ -173,11 +173,12 @@ export async function getMovieRecommendations(movieId, page = 1) {
  */
 export async function getMovieVideos(movieId) {
     const endpoint = TMDB_CONFIG.ENDPOINTS.MOVIE_VIDEOS.replace('{movie_id}', movieId);
-    const data = await fetchFromTMDB(endpoint);
-    // Filtrar solo trailers de YouTube
+    // Usar lenguaje inglés para tener más videos disponibles
+    const data = await fetchFromTMDB(endpoint, { language: 'en-US' });
+    // Filtrar videos de YouTube de varios tipos (Trailer, Teaser, Clip, Featurette, Behind the Scenes)
     data.results = data.results.filter(video => 
         video.site === 'YouTube' && 
-        (video.type === 'Trailer' || video.type === 'Teaser')
+        ['Trailer', 'Teaser', 'Clip', 'Featurette', 'Behind the Scenes', 'Bloopers'].includes(video.type)
     );
     return data;
 }

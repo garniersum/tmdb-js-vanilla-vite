@@ -11,6 +11,7 @@ import { formatDate, formatRuntime, formatRating, formatGenres } from '../utils/
 import { renderMovieCards } from '../components/movie-card.js';
 import { openModal } from '../components/modal.js';
 import { isFavorite, toggleFavorite } from '../services/storage.service.js';
+import { lazyLoadImages } from '../utils/helpers.js';
 
 /**
  * Inicializar vista de detalles de película
@@ -29,17 +30,6 @@ export function initMovieDetailView(movieId) {
     // Cargar detalles de la película
     loadMovieDetails(movieId);
     
-    // Cargar créditos/elenco
-    loadMovieCredits(movieId);
-    
-    // Cargar videos/trailers
-    loadMovieVideos(movieId);
-    
-    // Cargar películas similares
-    loadSimilarMovies(movieId);
-    
-    // Cargar recomendaciones
-    loadRecommendations(movieId);
 }
 
 /**
@@ -65,6 +55,18 @@ async function loadMovieDetails(movieId) {
     try {
         const movie = await getMovieDetails(movieId);
         renderMovieDetails(movie);
+
+        // Cargar créditos/elenco
+        loadMovieCredits(movieId);
+        
+        // Cargar videos/trailers
+        loadMovieVideos(movieId);
+    
+        // Cargar películas similares
+        loadSimilarMovies(movieId);
+        
+        // Cargar recomendaciones
+        loadRecommendations(movieId);
         
     } catch (error) {
         console.error('Error cargando detalles:', error);
@@ -250,13 +252,22 @@ async function loadMovieVideos(movieId) {
     try {
         const videos = await getMovieVideos(movieId);
         
-        // Guardar el primer trailer para el botón de "Ver Trailer"
-        const trailer = videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+        // Usar cualquier video disponible (Trailer, Teaser, Clip, etc.)
+        const video = videos.results.find(v => v.site === 'YouTube');
         
-        if (trailer) {
+        if (video) {
             const watchTrailerBtn = document.getElementById('watchTrailerBtn');
             if (watchTrailerBtn) {
-                watchTrailerBtn.onclick = () => openModal(trailer.key);
+                watchTrailerBtn.onclick = () => openModal(video.key);
+            }
+        } else {
+            // Si no hay videos, deshabilitar el botón
+            const watchTrailerBtn = document.getElementById('watchTrailerBtn');
+            if (watchTrailerBtn) {
+                watchTrailerBtn.disabled = true;
+                watchTrailerBtn.textContent = '❌ No hay video';
+                watchTrailerBtn.style.opacity = '0.5';
+                watchTrailerBtn.style.cursor = 'not-allowed';
             }
         }
         
@@ -280,7 +291,7 @@ async function loadSimilarMovies(movieId) {
     try {
         const data = await getSimilarMovies(movieId);
         renderMovieCards(data.results, similarGrid);
-        
+        lazyLoadImages();
     } catch (error) {
         console.error('Error cargando películas similares:', error);
     }
@@ -301,7 +312,7 @@ async function loadRecommendations(movieId) {
     try {
         const data = await getMovieRecommendations(movieId);
         renderMovieCards(data.results, recommendationsGrid);
-        
+        lazyLoadImages();
     } catch (error) {
         console.error('Error cargando recomendaciones:', error);
     }

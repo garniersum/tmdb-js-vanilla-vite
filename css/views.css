@@ -127,14 +127,18 @@
 }
 
 .cast-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    /* display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); */
+    display: flex;
+    flex-direction: row;
     gap: var(--spacing-lg);
+    overflow-x: auto;    
 }
 
 .cast-card {
+    flex: 0 0 155px;
     background-color: var(--color-bg-secondary);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-lg);    
     overflow: hidden;
     transition: transform var(--transition-base);
     cursor: pointer;
@@ -152,11 +156,12 @@
 }
 
 .cast-info {
-    padding: var(--spacing-md);
+    padding:  var(--spacing-md);
 }
 
 .cast-name {
     font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xl);
     color: var(--color-text-primary);
     margin-bottom: var(--spacing-xs);
     overflow: hidden;
@@ -330,7 +335,7 @@
     }
     
     .cast-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        /* grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); */
     }
     
     .search-title,
@@ -345,7 +350,7 @@
     }
     
     .cast-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        /* grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); */
         gap: var(--spacing-md);
     }
 }
