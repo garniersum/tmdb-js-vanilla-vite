@@ -209,8 +209,7 @@ export async function getMovieCredits(movieId) {
  * Datos esperados: results: [{ media_type, title, name, poster_path, profile_path, etc. }]
  */
 export async function searchMulti(query, page = 1) {
-    // TODO: Implementar consumo de endpoint de búsqueda multi
-    throw new Error('searchMulti no implementado aún');
+    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_MULTI, { query, page });
 }
 
 /**
@@ -223,8 +222,7 @@ export async function searchMulti(query, page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.SEARCH_MOVIE
  */
 export async function searchMovies(query, page = 1) {
-    // TODO: Implementar consumo de endpoint de búsqueda de películas
-    throw new Error('searchMovies no implementado aún');
+    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_MOVIE, { query, page });
 }
 
 /**
@@ -237,8 +235,7 @@ export async function searchMovies(query, page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.SEARCH_TV
  */
 export async function searchTV(query, page = 1) {
-    // TODO: Implementar consumo de endpoint de búsqueda de series
-    throw new Error('searchTV no implementado aún');
+    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_TV, { query, page });
 }
 
 /**
@@ -251,8 +248,7 @@ export async function searchTV(query, page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.SEARCH_PERSON
  */
 export async function searchPeople(query, page = 1) {
-    // TODO: Implementar consumo de endpoint de búsqueda de personas
-    throw new Error('searchPeople no implementado aún');
+    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_PERSON, { query, page });
 }
 
 /**

@@ -186,6 +186,7 @@ function renderSearchHistory() {
     
     if (history.length === 0) {
         searchHistory?.classList.add('hidden');
+        historyList.innerHTML = ''; 
         return;
     }
     

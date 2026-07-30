@@ -340,7 +340,7 @@ function renderSearchResults(results, type) {
     
     // Renderizar como tarjetas de película
     renderMovieCards(filteredResults, grid);
-    
+    lazyLoadImages();
 }
 
 /**
