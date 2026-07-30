@@ -106,8 +106,8 @@
     --navbar-bg: rgba(20, 20, 20, 0.9);
     
     /* Hero Desktop/Tablet 70vh  500px*/
-    --hero-height: 46vh;
-    --hero-min-height: 300px;
+    --hero-height: 34vh;
+    --hero-min-height: 260px;
     --hero-background: linear-gradient(to right, rgba(20, 20, 20, 0.9) 0%, rgba(20, 20, 20, 0.6) 50%, transparent 100%);
     
     /* Hero Mobile */
