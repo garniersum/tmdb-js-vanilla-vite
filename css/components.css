@@ -452,12 +452,22 @@
 }
 
 @media (max-width: 576px) {
-    .hero .hero-content {
+    .hero .hero-overview {
         width: 100%;
+        margin-bottom: var(--spacing-lg);
     }
 
     .movies-grid {
         gap: var(--spacing-md);
+    }
+
+    .hero .hero-title {
+        font-size: var(--font-size-xl);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .btn {
+        font-size: var(--font-size-sm);
     }
 }
 
@@ -500,7 +510,7 @@
 .hero-content {
     position: relative;
     z-index: 1;
-    width: 60%;
+    width: 100%;
     padding: var(--spacing-2xl) var(--container-padding);    
 }
 
@@ -513,6 +523,7 @@
 }
 
 .hero-overview {
+    width: 60%;
     font-size: var(--font-size-lg);
     color: var(--color-text-secondary);
     margin-bottom: var(--spacing-xl);
@@ -934,6 +945,7 @@
     
     .hero-overview {
         font-size: var(--font-size-base);
+        width: 75%;
     }
     
     .section-title {
