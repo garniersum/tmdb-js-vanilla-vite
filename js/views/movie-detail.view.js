@@ -151,13 +151,13 @@ function renderMovieDetails(movie) {
         </div>
         
         <div class="movie-detail-section" style="max-width: var(--container-max-width); margin: 0 auto var(--spacing-2xl); padding: 0 var(--container-padding);">
-            <h2 class="movie-detail-section-title">Películas Similares</h2>
-            <div class="movies-grid" id="similarGrid"></div>
+            <h2 class="movie-detail-section-title">Recomendaciones</h2>
+            <div class="movies-grid" id="recommendationsGrid"></div>
         </div>
         
         <div class="movie-detail-section" style="max-width: var(--container-max-width); margin: 0 auto var(--spacing-2xl); padding: 0 var(--container-padding);">
-            <h2 class="movie-detail-section-title">Recomendaciones</h2>
-            <div class="movies-grid" id="recommendationsGrid"></div>
+            <h2 class="movie-detail-section-title">Películas Similares</h2>
+            <div class="movies-grid" id="similarGrid"></div>
         </div>
     `;
     
