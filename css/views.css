@@ -17,6 +17,7 @@
 .movie-detail-header-content {
     display: flex;
     justify-content: center;
+    align-items: center;
     margin: 0 auto;
 
     max-width: var(--container-max-width);
@@ -33,7 +34,7 @@
 }
 
 .movie-detail-info {    
-    width: 100%;
+    width: 90%;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);    
@@ -340,6 +341,10 @@
         grid-template-columns: 1fr;
     }
     
+    .movie-detail-info{
+        width: 100%;
+    }
+
     .movie-detail-poster {
         max-width: 225px;
         margin: 0 auto;
