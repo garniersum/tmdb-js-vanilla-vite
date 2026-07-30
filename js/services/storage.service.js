@@ -12,6 +12,70 @@ const STORAGE_KEYS = {
 };
 
 /**
+ * Leer y parsear un array desde LocalStorage de forma segura.
+ * Si el valor está corrupto o LocalStorage no está disponible,
+ * registra el error, descarta el valor inválido y devuelve el fallback.
+ * @param {string} key - Clave de LocalStorage
+ * @param {Array} fallback - Valor por defecto
+ * @returns {Array}
+ */
+function readArray(key, fallback = []) {
+    let stored;
+    try {
+        stored = localStorage.getItem(key);
+    } catch (error) {
+        console.error(`No se pudo leer "${key}" de LocalStorage:`, error);
+        return fallback;
+    }
+
+    if (!stored) return fallback;
+
+    try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : fallback;
+    } catch (error) {
+        console.error(`Datos corruptos en "${key}", se descartan:`, error);
+        try {
+            localStorage.removeItem(key);
+        } catch (removeError) {
+            console.error(`No se pudo limpiar "${key}":`, removeError);
+        }
+        return fallback;
+    }
+}
+
+/**
+ * Escribir un valor en LocalStorage de forma segura.
+ * @param {string} key - Clave de LocalStorage
+ * @param {*} value - Valor a serializar y guardar
+ * @returns {boolean} True si se guardó correctamente
+ */
+function writeItem(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (error) {
+        console.error(`No se pudo guardar "${key}" en LocalStorage:`, error);
+        return false;
+    }
+}
+
+/**
+ * Eliminar una clave de LocalStorage de forma segura.
+ * @param {string} key - Clave a eliminar
+ * @returns {boolean} True si se eliminó correctamente
+ */
+function removeItem(key) {
+    try {
+        localStorage.removeItem(key);
+        return true;
+    } catch (error) {
+        console.error(`No se pudo eliminar "${key}" de LocalStorage:`, error);
+        return false;
+    }
+}
+
+/**
  * Obtener favoritos del LocalStorage
  * @returns {Array} Lista de IDs de películas favoritas
  * 
@@ -19,9 +83,7 @@ const STORAGE_KEYS = {
  * Pista: Usa JSON.parse() para convertir el string a array
  */
 export function getFavorites() {
-    // TODO: Implementar obtención de favoritos
-    const stored = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-    return stored ? JSON.parse(stored) : [];
+    return readArray(STORAGE_KEYS.FAVORITES);
 }
 
 /**
@@ -48,8 +110,8 @@ export function addFavorite(movieId, movieData = null) {
         favorites.push({ id: movieId });
     }
     
-    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
-    return true;
+    // Devuelve false si la escritura falla para no reportar un guardado inexistente
+    return writeItem(STORAGE_KEYS.FAVORITES, favorites);
 }
 
 /**
@@ -62,7 +124,7 @@ export function removeFavorite(movieId) {
     // TODO: Implementar remoción de favoritos
     const favorites = getFavorites();
     const filtered = favorites.filter(fav => fav.id !== movieId);
-    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(filtered));
+    return writeItem(STORAGE_KEYS.FAVORITES, filtered);
 }
 
 /**
@@ -87,14 +149,14 @@ export function isFavorite(movieId) {
  * TODO: Implementar toggle de favorito
  */
 export function toggleFavorite(movieId, movieData = null) {
-    // TODO: Implementar toggle de favorito
+    // Devuelve el estado realmente persistido para no mostrar un cambio
+    // que no se guardó (p. ej. si LocalStorage falla o está lleno).
     if (isFavorite(movieId)) {
         removeFavorite(movieId);
-        return false;
     } else {
         addFavorite(movieId, movieData);
-        return true;
     }
+    return isFavorite(movieId);
 }
 
 /**
@@ -104,9 +166,7 @@ export function toggleFavorite(movieId, movieData = null) {
  * TODO: Implementar obtención de historial
  */
 export function getSearchHistory() {
-    // TODO: Implementar obtención de historial
-    const stored = localStorage.getItem(STORAGE_KEYS.SEARCH_HISTORY);
-    return stored ? JSON.parse(stored) : [];
+    return readArray(STORAGE_KEYS.SEARCH_HISTORY);
 }
 
 /**
@@ -130,7 +190,7 @@ export function addToSearchHistory(query) {
     // Mantener solo los últimos 10
     const trimmed = filtered.slice(0, 10);
     
-    localStorage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(trimmed));
+    return writeItem(STORAGE_KEYS.SEARCH_HISTORY, trimmed);
 }
 
 /**
@@ -139,8 +199,7 @@ export function addToSearchHistory(query) {
  * TODO: Implementar limpieza del historial
  */
 export function clearSearchHistory() {
-    // TODO: Implementar limpieza del historial
-    localStorage.removeItem(STORAGE_KEYS.SEARCH_HISTORY);
+    return removeItem(STORAGE_KEYS.SEARCH_HISTORY);
 }
 
 /**
@@ -150,9 +209,12 @@ export function clearSearchHistory() {
  * TODO: Implementar obtención del tema
  */
 export function getTheme() {
-    // TODO: Implementar obtención del tema
-    const stored = localStorage.getItem(STORAGE_KEYS.THEME);
-    return stored || 'dark';
+    try {
+        return localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
+    } catch (error) {
+        console.error('No se pudo leer el tema de LocalStorage:', error);
+        return 'dark';
+    }
 }
 
 /**
@@ -162,8 +224,13 @@ export function getTheme() {
  * TODO: Implementar guardado del tema
  */
 export function setTheme(theme) {
-    // TODO: Implementar guardado del tema
-    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    try {
+        localStorage.setItem(STORAGE_KEYS.THEME, theme);
+        return true;
+    } catch (error) {
+        console.error('No se pudo guardar el tema en LocalStorage:', error);
+        return false;
+    }
 }
 
 /**
@@ -172,8 +239,10 @@ export function setTheme(theme) {
  * TODO: Implementar limpieza de todos los datos
  */
 export function clearAllData() {
-    // TODO: Implementar limpieza de todos los datos
-    localStorage.removeItem(STORAGE_KEYS.FAVORITES);
-    localStorage.removeItem(STORAGE_KEYS.SEARCH_HISTORY);
-    localStorage.removeItem(STORAGE_KEYS.THEME);
+    const results = [
+        removeItem(STORAGE_KEYS.FAVORITES),
+        removeItem(STORAGE_KEYS.SEARCH_HISTORY),
+        removeItem(STORAGE_KEYS.THEME)
+    ];
+    return results.every(Boolean);
 }

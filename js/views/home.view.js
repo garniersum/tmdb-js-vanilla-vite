@@ -125,14 +125,24 @@ async function loadTrendingSection(timeWindow = 'day', page = 1) {
         lazyLoadImages();
     } catch (error) {
         console.error('Error cargando tendencias:', error);
-        grid.innerHTML = `
-            <div class="error-state">
-                <div class="error-icon">❌</div>
-                <h3>Error al cargar tendencias</h3>
-                <p>Por favor, intenta nuevamente</p>
-            </div>
-        `;
+        renderSectionError(grid, 'Error al cargar tendencias');
     }
+}
+
+/**
+ * Renderizar estado de error en una sección
+ * @param {HTMLElement} grid - Contenedor de la sección
+ * @param {string} title - Título del error
+ */
+function renderSectionError(grid, title) {
+    if (!grid) return;
+    grid.innerHTML = `
+        <div class="error-state">
+            <div class="error-icon">❌</div>
+            <h3>${title}</h3>
+            <p>Por favor, intenta nuevamente</p>
+        </div>
+    `;
 }
 
 /**
@@ -154,6 +164,7 @@ async function loadPopularSection(page = 1) {
         lazyLoadImages();
     } catch (error) {
         console.error('Error cargando populares:', error);
+        renderSectionError(grid, 'Error al cargar películas populares');
     }
 }
 
@@ -176,6 +187,7 @@ async function loadTopRatedSection(page = 1) {
         lazyLoadImages();
     } catch (error) {
         console.error('Error cargando top rated:', error);
+        renderSectionError(grid, 'Error al cargar mejor calificadas');
     }
 }
 
@@ -198,6 +210,7 @@ async function loadUpcomingSection(page = 1) {
         lazyLoadImages();
     } catch (error) {
         console.error('Error cargando upcoming:', error);
+        renderSectionError(grid, 'Error al cargar próximos estrenos');
     }
 }
 
