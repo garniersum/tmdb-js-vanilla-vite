@@ -6,12 +6,13 @@
  */
 
 import { getMovieDetails, getMovieCredits, getMovieVideos, getSimilarMovies, getMovieRecommendations } from '../services/tmdb.service.js';
-import { getImageUrl, getBackdropUrl } from '../config/tmdb.config.js';
+import { getImageUrl, getBackdropUrl, getProfileUrl } from '../config/tmdb.config.js';
 import { formatDate, formatRuntime, formatRating, formatGenres } from '../utils/formatters.js';
-import { renderMovieCards } from '../components/movie-card.js';
+import { loadMovieGrid } from '../components/movie-grid.js';
+import { bindFavoriteButton, renderFavoriteLabel } from '../components/favorite-button.js';
 import { openModal } from '../components/modal.js';
-import { isFavorite, toggleFavorite } from '../services/storage.service.js';
-import { lazyLoadImages } from '../utils/helpers.js';
+import { isFavorite } from '../services/storage.service.js';
+import { renderLoadingState, renderErrorState } from '../utils/ui-state.js';
 
 /**
  * Inicializar vista de detalles de película
@@ -45,12 +46,7 @@ async function loadMovieDetails(movieId) {
     if (!container) return;
     
     // Mostrar loading
-    container.innerHTML = `
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Cargando detalles...</p>
-        </div>
-    `;
+    renderLoadingState(container, 'Cargando detalles...');
     
     try {
         const movie = await getMovieDetails(movieId);
@@ -123,7 +119,7 @@ function renderMovieDetails(movie) {
                                 <span>▶</span> Ver Trailer
                             </button>
                             <button class="btn btn-outline favorite-btn ${isFav ? 'active' : ''}" id="favoriteBtn">
-                                ${isFav ? '❤️ En Favoritos' : '🤍 Agregar a Favoritos'}
+                                ${renderFavoriteLabel(isFav, true)}
                             </button>
                         </div>                    
                 </div>
@@ -175,18 +171,13 @@ function initDetailEventListeners(movie) {
     // TODO: Implementar event listeners
     
     const watchTrailerBtn = document.getElementById('watchTrailerBtn');
-    const favoriteBtn = document.getElementById('favoriteBtn');
     
     watchTrailerBtn?.addEventListener('click', () => {
         // TODO: Obtener trailer y abrir modal
         console.log('Ver trailer', movie.id);
     });
     
-    favoriteBtn?.addEventListener('click', () => {
-        const isNowFavorite = toggleFavorite(movie.id, movie);
-        favoriteBtn.classList.toggle('active', isNowFavorite);
-        favoriteBtn.textContent = isNowFavorite ? '❤️ En Favoritos' : '🤍 Agregar a Favoritos';
-    });
+    bindFavoriteButton(document.getElementById('favoriteBtn'), movie, { withText: true });
 }
 
 /**
@@ -229,7 +220,7 @@ function renderCast(cast) {
     
     castGrid.innerHTML = cast.slice(0, 10).map(actor => `
         <div class="cast-card">
-            <img src="${actor.profile_path ? getImageUrl(actor.profile_path, 'w185') : 'https://placehold.co/185x278/1a1a1a/ffffff?text=No+Photo'}" 
+            <img src="${getProfileUrl(actor.profile_path, 'w185')}" 
                  alt="${actor.name}" 
                  class="cast-photo"
                  loading="lazy">
@@ -284,17 +275,12 @@ async function loadMovieVideos(movieId) {
  */
 async function loadSimilarMovies(movieId) {
     // TODO: Implementar carga de películas similares
-    const similarGrid = document.getElementById('similarGrid');
-    
-    if (!similarGrid) return;
-    
-    try {
-        const data = await getSimilarMovies(movieId);
-        renderMovieCards(data.results, similarGrid);
-        lazyLoadImages();
-    } catch (error) {
-        console.error('Error cargando películas similares:', error);
-    }
+    await loadMovieGrid({
+        gridId: 'similarGrid',
+        label: 'películas similares',
+        showSkeletons: false,
+        fetchMovies: () => getSimilarMovies(movieId)
+    });
 }
 
 /**
@@ -305,17 +291,12 @@ async function loadSimilarMovies(movieId) {
  */
 async function loadRecommendations(movieId) {
     // TODO: Implementar carga de recomendaciones
-    const recommendationsGrid = document.getElementById('recommendationsGrid');
-    
-    if (!recommendationsGrid) return;
-    
-    try {
-        const data = await getMovieRecommendations(movieId);
-        renderMovieCards(data.results, recommendationsGrid);
-        lazyLoadImages();
-    } catch (error) {
-        console.error('Error cargando recomendaciones:', error);
-    }
+    await loadMovieGrid({
+        gridId: 'recommendationsGrid',
+        label: 'recomendaciones',
+        showSkeletons: false,
+        fetchMovies: () => getMovieRecommendations(movieId)
+    });
 }
 
 /**
@@ -326,16 +307,8 @@ async function loadRecommendations(movieId) {
  */
 function showError(message) {
     // TODO: Implementar mostrado de error
-    const container = document.getElementById('movieDetailContainer');
-    
-    if (!container) return;
-    
-    container.innerHTML = `
-        <div class="error-state">
-            <div class="error-icon">❌</div>
-            <h3>Error</h3>
-            <p>${message}</p>
-            <button class="btn btn-primary" onclick="window.history.back()">Volver</button>
-        </div>
-    `;
+    renderErrorState(document.getElementById('movieDetailContainer'), {
+        message,
+        actionHtml: '<button class="btn btn-primary" onclick="window.history.back()">Volver</button>'
+    });
 }

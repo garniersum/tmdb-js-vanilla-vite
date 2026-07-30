@@ -12,6 +12,26 @@ const STORAGE_KEYS = {
 };
 
 /**
+ * Leer un valor JSON del LocalStorage
+ * @param {string} key - Clave de LocalStorage
+ * @param {*} fallback - Valor a retornar si no hay dato guardado
+ * @returns {*} Valor almacenado o el fallback
+ */
+function readJson(key, fallback) {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : fallback;
+}
+
+/**
+ * Guardar un valor JSON en el LocalStorage
+ * @param {string} key - Clave de LocalStorage
+ * @param {*} value - Valor a guardar
+ */
+function writeJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+/**
  * Obtener favoritos del LocalStorage
  * @returns {Array} Lista de IDs de películas favoritas
  * 
@@ -20,8 +40,7 @@ const STORAGE_KEYS = {
  */
 export function getFavorites() {
     // TODO: Implementar obtención de favoritos
-    const stored = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-    return stored ? JSON.parse(stored) : [];
+    return readJson(STORAGE_KEYS.FAVORITES, []);
 }
 
 /**
@@ -48,7 +67,7 @@ export function addFavorite(movieId, movieData = null) {
         favorites.push({ id: movieId });
     }
     
-    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
+    writeJson(STORAGE_KEYS.FAVORITES, favorites);
     return true;
 }
 
@@ -62,7 +81,7 @@ export function removeFavorite(movieId) {
     // TODO: Implementar remoción de favoritos
     const favorites = getFavorites();
     const filtered = favorites.filter(fav => fav.id !== movieId);
-    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(filtered));
+    writeJson(STORAGE_KEYS.FAVORITES, filtered);
 }
 
 /**
@@ -105,8 +124,7 @@ export function toggleFavorite(movieId, movieData = null) {
  */
 export function getSearchHistory() {
     // TODO: Implementar obtención de historial
-    const stored = localStorage.getItem(STORAGE_KEYS.SEARCH_HISTORY);
-    return stored ? JSON.parse(stored) : [];
+    return readJson(STORAGE_KEYS.SEARCH_HISTORY, []);
 }
 
 /**
@@ -130,7 +148,7 @@ export function addToSearchHistory(query) {
     // Mantener solo los últimos 10
     const trimmed = filtered.slice(0, 10);
     
-    localStorage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(trimmed));
+    writeJson(STORAGE_KEYS.SEARCH_HISTORY, trimmed);
 }
 
 /**
@@ -173,7 +191,5 @@ export function setTheme(theme) {
  */
 export function clearAllData() {
     // TODO: Implementar limpieza de todos los datos
-    localStorage.removeItem(STORAGE_KEYS.FAVORITES);
-    localStorage.removeItem(STORAGE_KEYS.SEARCH_HISTORY);
-    localStorage.removeItem(STORAGE_KEYS.THEME);
+    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
 }
