@@ -59,11 +59,15 @@ function showEmptyState() {
             <div class="empty-icon">❤️</div>
             <h3>No tienes favoritos aún</h3>
             <p>Agrega películas a tus favoritos para verlas aquí</p>
-            <button class="btn btn-primary" onclick="window.location.hash='#home'">
+            <button class="btn btn-primary" id="exploreMoviesBtn">
                 Explorar Películas
             </button>
         </div>
     `;
+    
+    favoritesGrid.querySelector('#exploreMoviesBtn')?.addEventListener('click', () => {
+        window.location.hash = '#home';
+    });
 }
 
 /**

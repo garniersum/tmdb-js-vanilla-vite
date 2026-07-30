@@ -10,7 +10,7 @@ import { getImageUrl } from '../config/tmdb.config.js';
 import { renderMovieCards, renderSkeletons } from '../components/movie-card.js';
 import { getSearchHistory, clearSearchHistory } from '../services/storage.service.js';
 import { navigateTo } from '../services/router.service.js';
-import { lazyLoadImages } from '../utils/helpers.js';
+import { lazyLoadImages, escapeHtml } from '../utils/helpers.js';
 
 /**
  * Estado de la vista de búsqueda
@@ -148,7 +148,7 @@ function initSearchHistory() {
     document.getElementById('searchHistory')?.classList.remove('hidden');
     
     historyList.innerHTML = history.map(item => `
-        <span class="history-item" data-query="${item}">${item}</span>
+        <span class="history-item" data-query="${escapeHtml(item)}">${escapeHtml(item)}</span>
     `).join('');
     
     // Event listeners para items del historial
@@ -364,12 +364,12 @@ function createSearchResultCard(item) {
     
     card.innerHTML = `
         <div class="movie-poster">
-            <img data-src="${posterUrl}" alt="${title}">
+            <img data-src="${escapeHtml(posterUrl)}" alt="${escapeHtml(title)}">
         </div>
         <div class="movie-info">
-            <h3 class="movie-title">${title}</h3>
+            <h3 class="movie-title">${escapeHtml(title)}</h3>
             <div class="movie-meta">
-                <span class="movie-year">${date ? date.split('-')[0] : ''}</span>
+                <span class="movie-year">${escapeHtml(date ? date.split('-')[0] : '')}</span>
                 <span class="movie-type">${isPerson ? '👤 Persona' : (item.media_type === 'tv' ? '📺 Serie' : '🎬 Película')}</span>
             </div>
         </div>
