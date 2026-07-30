@@ -452,6 +452,10 @@
 }
 
 @media (max-width: 576px) {
+    .hero .hero-content {
+        width: 100%;
+    }
+
     .movies-grid {
         gap: var(--spacing-md);
     }
@@ -496,7 +500,7 @@
 .hero-content {
     position: relative;
     z-index: 1;
-    width: 75%;
+    width: 60%;
     padding: var(--spacing-2xl) var(--container-padding);    
 }
 
@@ -900,8 +904,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .navbar-menu {
-        
+    .navbar-menu {        
         top: var(--navbar-height);
         left: 0;
         right: 0;

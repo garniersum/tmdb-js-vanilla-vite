@@ -103,13 +103,17 @@
     
     /* Navbar */
     --navbar-height: 70px;
-    --navbar-bg: rgba(20, 20, 20, 0.95);
+    --navbar-bg: rgba(20, 20, 20, 0.9);
     
-    /* Hero 70vh  500px*/
-    --hero-height: 40vh;
+    /* Hero Desktop/Tablet 70vh  500px*/
+    --hero-height: 46vh;
     --hero-min-height: 300px;
     --hero-background: linear-gradient(to right, rgba(20, 20, 20, 0.9) 0%, rgba(20, 20, 20, 0.6) 50%, transparent 100%);
-
+    
+    /* Hero Mobile */
+    --hero-height-mobile: 40vh;
+    --hero-min-height-mobile: 300px;
+    
     /* Movie Detail Header */
     --movie-detail-header-background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75));
 }
@@ -127,7 +131,7 @@
     --color-border: #d0d0d0;
     --color-border-light: #e0e0e0;
     
-    --navbar-bg: rgba(255, 255, 255, 0.95);
+    --navbar-bg: rgba(255, 255, 255, 0.9);
 
     --hero-background: linear-gradient(to right, rgba(252, 251, 251, 0.9) 0%, rgba(253, 252, 252, 0.7) 50%, transparent 100%);
     --movie-detail-header-background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9));
