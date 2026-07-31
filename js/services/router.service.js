@@ -18,9 +18,7 @@ export function navigateTo(route, params = {}) {
     // Pista: Construye el hash con los parámetros
     // Ejemplo: window.location.hash = `#${route}?${queryParams}`
     
-    const queryString = new URLSearchParams(params).toString();
-    const hash = queryString ? `#${route}?${queryString}` : `#${route}`;
-    window.location.hash = hash;
+    window.location.hash = createUrl(route, params);
 }
 
 /**
