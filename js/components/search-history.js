@@ -6,6 +6,7 @@
  */
 
 import { getSearchHistory, clearSearchHistory } from '../services/storage.service.js';
+import { escapeHtml } from '../utils/helpers.js';
 
 /**
  * Renderizar la lista del historial de búsqueda
@@ -29,7 +30,7 @@ export function renderSearchHistory(onSelect) {
     searchHistory?.classList.remove('hidden');
 
     historyList.innerHTML = history.map(item => `
-        <span class="history-item" data-query="${item}">${item}</span>
+        <span class="history-item" data-query="${escapeHtml(item)}">${escapeHtml(item)}</span>
     `).join('');
 
     historyList.querySelectorAll('.history-item').forEach(item => {

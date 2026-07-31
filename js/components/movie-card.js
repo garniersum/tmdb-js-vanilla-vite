@@ -8,6 +8,7 @@ import { getImageUrl } from '../config/tmdb.config.js';
 import { formatYear, formatRating } from '../utils/formatters.js';
 import { isFavorite } from '../services/storage.service.js';
 import { navigateTo } from '../services/router.service.js';
+import { escapeHtml } from '../utils/helpers.js';
 import { bindFavoriteButton, renderFavoriteLabel } from './favorite-button.js';
 import { renderEmptyState } from '../utils/ui-state.js';
 
@@ -19,10 +20,10 @@ import { renderEmptyState } from '../utils/ui-state.js';
 export function buildPosterCardMarkup({ posterUrl, title, metaHtml = '', actionsHtml = '' }) {
     return `
         <div class="movie-poster">
-            <img data-src="${posterUrl}" alt="${title}">
+            <img data-src="${escapeHtml(posterUrl)}" alt="${escapeHtml(title)}">
         </div>
         <div class="movie-info">
-            <h3 class="movie-title">${title}</h3>
+            <h3 class="movie-title">${escapeHtml(title)}</h3>
             <div class="movie-meta">${metaHtml}</div>
         </div>
         ${actionsHtml}
@@ -53,8 +54,8 @@ export function createMovieCard(movie, options = {}) {
         posterUrl,
         title: movie.title,
         metaHtml: `
-                <span class="movie-year">${year}</span>
-                <span class="movie-rating">⭐ ${rating}</span>
+                <span class="movie-year">${escapeHtml(year)}</span>
+                <span class="movie-rating">⭐ ${escapeHtml(rating)}</span>
         `,
         actionsHtml: `
         <div class="movie-card-actions">

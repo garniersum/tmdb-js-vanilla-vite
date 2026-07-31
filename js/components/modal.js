@@ -50,6 +50,9 @@ export function openModal(videoKey) {
     
     if (!modal || !trailerIframe) return;
     
+    // Validar la key para evitar inyección de URLs arbitrarias en el iframe
+    if (!/^[A-Za-z0-9_-]{5,32}$/.test(String(videoKey))) return;
+    
     // Construir URL de YouTube embed
     const embedUrl = `https://www.youtube.com/embed/${videoKey}?autoplay=1&rel=0`;
     trailerIframe.src = embedUrl;

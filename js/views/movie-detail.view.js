@@ -12,6 +12,7 @@ import { loadMovieGrid } from '../components/movie-grid.js';
 import { bindFavoriteButton, renderFavoriteLabel } from '../components/favorite-button.js';
 import { openModal } from '../components/modal.js';
 import { isFavorite } from '../services/storage.service.js';
+import { escapeHtml } from '../utils/helpers.js';
 import { renderLoadingState, renderErrorState } from '../utils/ui-state.js';
 
 /**
@@ -23,8 +24,8 @@ import { renderLoadingState, renderErrorState } from '../utils/ui-state.js';
 export function initMovieDetailView(movieId) {
     // TODO: Implementar inicialización de vista de detalles
     
-    if (!movieId) {
-        showError('ID de película no proporcionado');
+    if (!/^\d+$/.test(String(movieId))) {
+        showError('ID de película no válido');
         return;
     }
     
@@ -91,28 +92,28 @@ function renderMovieDetails(movie) {
     const genres = formatGenres(movie.genres);
     
     container.innerHTML = `
-        <div class="movie-detail-header" style="background-image:  var(--movie-detail-header-background), url('${backdropUrl}'); background-size: cover; background-position: center;">
+        <div class="movie-detail-header" style="background-image:  var(--movie-detail-header-background), url('${encodeURI(backdropUrl)}'); background-size: cover; background-position: center;">
                 <div class="movie-detail-header-content" >
-                    <img src="${posterUrl}" alt="${movie.title}" class="movie-detail-poster" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);">
+                    <img src="${escapeHtml(posterUrl)}" alt="${escapeHtml(movie.title)}" class="movie-detail-poster" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);">
                     
                     <div class="movie-detail-info">
-                        <h1 class="movie-detail-title">${movie.title}</h1>
+                        <h1 class="movie-detail-title">${escapeHtml(movie.title)}</h1>
                         
                         <div class="movie-detail-meta">
-                            <span>${releaseDate}</span>
+                            <span>${escapeHtml(releaseDate)}</span>
                             <span>•</span>
-                            <span>${runtime}</span>
+                            <span>${escapeHtml(runtime)}</span>
                             <span>•</span>
-                            <span>⭐ ${rating}</span>
+                            <span>⭐ ${escapeHtml(rating)}</span>
                         </div>
                         
-                        ${movie.tagline ? `<p class="movie-detail-tagline">"${movie.tagline}"</p>` : ''}
+                        ${movie.tagline ? `<p class="movie-detail-tagline">"${escapeHtml(movie.tagline)}"</p>` : ''}
                         
                         <div class="movie-detail-genres">
-                            ${movie.genres.map(genre => `<span class="genre-tag">${genre.name}</span>`).join('')}
+                            ${(movie.genres || []).map(genre => `<span class="genre-tag">${escapeHtml(genre.name)}</span>`).join('')}
                         </div>
                         
-                        <p class="movie-detail-overview">${movie.overview}</p>
+                        <p class="movie-detail-overview">${escapeHtml(movie.overview)}</p>
                         
                         <div class="movie-detail-actions">
                             <button class="btn btn-primary" id="watchTrailerBtn">
@@ -128,7 +129,7 @@ function renderMovieDetails(movie) {
         
         <div class="movie-detail-stats" style="max-width: var(--container-max-width); margin: var(--spacing-2xl) auto; padding: 0 var(--container-padding);">
             <div class="stat-item">
-                <div class="stat-value">${movie.vote_count}</div>
+                <div class="stat-value">${escapeHtml(movie.vote_count)}</div>
                 <div class="stat-label">Votos</div>
             </div>
             <div class="stat-item">
@@ -220,13 +221,13 @@ function renderCast(cast) {
     
     castGrid.innerHTML = cast.slice(0, 10).map(actor => `
         <div class="cast-card">
-            <img src="${getProfileUrl(actor.profile_path, 'w185')}" 
-                 alt="${actor.name}" 
+            <img src="${escapeHtml(getProfileUrl(actor.profile_path, 'w185'))}" 
+                 alt="${escapeHtml(actor.name)}" 
                  class="cast-photo"
                  loading="lazy">
             <div class="cast-info">
-                <h4 class="cast-name">${actor.name}</h4>
-                <p class="cast-character">${actor.character}</p>
+                <h4 class="cast-name">${escapeHtml(actor.name)}</h4>
+                <p class="cast-character">${escapeHtml(actor.character)}</p>
             </div>
         </div>
     `).join('');
@@ -307,8 +308,12 @@ async function loadRecommendations(movieId) {
  */
 function showError(message) {
     // TODO: Implementar mostrado de error
-    renderErrorState(document.getElementById('movieDetailContainer'), {
+    const container = document.getElementById('movieDetailContainer');
+
+    renderErrorState(container, {
         message,
-        actionHtml: '<button class="btn btn-primary" onclick="window.history.back()">Volver</button>'
+        actionHtml: '<button class="btn btn-primary" id="errorBackBtn">Volver</button>'
     });
+
+    container?.querySelector('#errorBackBtn')?.addEventListener('click', () => window.history.back());
 }

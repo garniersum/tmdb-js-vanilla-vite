@@ -261,16 +261,18 @@ export function isValidUrl(url) {
 
 /**
  * Escapar HTML para prevenir XSS
+ * Seguro tanto para contenido de texto como para valores de atributos entre comillas.
  * @param {string} str - String a escapar
  * @returns {string} String escapado
- * 
- * TODO: Implementar escape de HTML
  */
 export function escapeHtml(str) {
-    // TODO: Implementar escape de HTML
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 /**

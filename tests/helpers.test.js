@@ -320,7 +320,13 @@ describe('isValidUrl', () => {
 describe('escapeHtml', () => {
     it('escapes characters that could inject markup', () => {
         expect(escapeHtml('<script>alert("x")</script>')).toBe(
-            '&lt;script&gt;alert("x")&lt;/script&gt;'
+            '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;'
+        );
+    });
+
+    it('escapes quotes so it is safe inside attributes', () => {
+        expect(escapeHtml(`" onerror='alert(1)'`)).toBe(
+            '&quot; onerror=&#39;alert(1)&#39;'
         );
     });
 

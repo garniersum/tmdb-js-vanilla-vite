@@ -11,6 +11,7 @@ import { buildPosterCardMarkup } from '../components/movie-card.js';
 import { loadMovieGrid } from '../components/movie-grid.js';
 import { initSearchHistory } from '../components/search-history.js';
 import { navigateTo } from '../services/router.service.js';
+import { lazyLoadImages, escapeHtml } from '../utils/helpers.js';
 import { renderEmptyState } from '../utils/ui-state.js';
 import { observeIntersection, setActiveInGroup, appendScrollSentinel } from '../utils/dom.js';
 
@@ -264,7 +265,7 @@ function createSearchResultCard(item) {
         posterUrl: getImageUrl(posterPath, 'w500'),
         title,
         metaHtml: `
-                <span class="movie-year">${date ? date.split('-')[0] : ''}</span>
+                <span class="movie-year">${escapeHtml(date ? date.split('-')[0] : '')}</span>
                 <span class="movie-type">${isPerson ? '👤 Persona' : (item.media_type === 'tv' ? '📺 Serie' : '🎬 Película')}</span>
         `
     });

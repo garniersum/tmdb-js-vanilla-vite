@@ -50,15 +50,21 @@ function loadFavorites() {
  */
 function showEmptyState() {
     // TODO: Implementar mostrado de estado vacío
-    renderEmptyState(document.getElementById('favoritesGrid'), {
+    const favoritesGrid = document.getElementById('favoritesGrid');
+
+    renderEmptyState(favoritesGrid, {
         icon: '❤️',
         title: 'No tienes favoritos aún',
         message: 'Agrega películas a tus favoritos para verlas aquí',
         actionHtml: `
-            <button class="btn btn-primary" onclick="window.location.hash='#home'">
+            <button class="btn btn-primary" id="exploreMoviesBtn">
                 Explorar Películas
             </button>
         `
+    });
+
+    favoritesGrid?.querySelector('#exploreMoviesBtn')?.addEventListener('click', () => {
+        window.location.hash = '#home';
     });
 }
 

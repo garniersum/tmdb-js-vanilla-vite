@@ -5,6 +5,8 @@
  * que se muestran dentro de un contenedor.
  */
 
+import { escapeHtml } from './helpers.js';
+
 /**
  * Renderizar estado de carga
  * @param {HTMLElement} container - Contenedor
@@ -16,7 +18,7 @@ export function renderLoadingState(container, message = 'Cargando...') {
     container.innerHTML = `
         <div class="loading-spinner">
             <div class="spinner"></div>
-            <p>${message}</p>
+            <p>${escapeHtml(message)}</p>
         </div>
     `;
 }
@@ -38,9 +40,9 @@ export function renderErrorState(container, options = {}) {
 
     container.innerHTML = `
         <div class="error-state">
-            <div class="error-icon">${icon}</div>
-            <h3>${title}</h3>
-            <p>${message}</p>
+            <div class="error-icon">${escapeHtml(icon)}</div>
+            <h3>${escapeHtml(title)}</h3>
+            <p>${escapeHtml(message)}</p>
             ${actionHtml}
         </div>
     `;
@@ -63,9 +65,9 @@ export function renderEmptyState(container, options = {}) {
 
     container.innerHTML = `
         <div class="empty-state">
-            <div class="empty-icon">${icon}</div>
-            <h3>${title}</h3>
-            <p>${message}</p>
+            <div class="empty-icon">${escapeHtml(icon)}</div>
+            <h3>${escapeHtml(title)}</h3>
+            <p>${escapeHtml(message)}</p>
             ${actionHtml}
         </div>
     `;
