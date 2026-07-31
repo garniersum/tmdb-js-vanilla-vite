@@ -239,10 +239,6 @@ export function setTheme(theme) {
  * TODO: Implementar limpieza de todos los datos
  */
 export function clearAllData() {
-    const results = [
-        removeItem(STORAGE_KEYS.FAVORITES),
-        removeItem(STORAGE_KEYS.SEARCH_HISTORY),
-        removeItem(STORAGE_KEYS.THEME)
-    ];
+    const results = Object.values(STORAGE_KEYS).map(key => removeItem(key));
     return results.every(Boolean);
 }

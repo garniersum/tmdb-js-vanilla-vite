@@ -4,82 +4,27 @@
  * Funciones helper generales para la aplicación
  */
 
-/**
- * Debounce function - Retrasa la ejecución de una función
- * @param {Function} func - Función a ejecutar
- * @param {number} wait - Tiempo de espera en ms
- * @returns {Function} Función con debounce
- * 
- * TODO: Implementar debounce
- * Útil para búsqueda: no ejecutar en cada tecla, sino después de que el usuario deje de escribir
- */
-export function debounce(func, wait = 300) {
-    // TODO: Implementar debounce
-    let timeout;
-    
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
+import { observeIntersection } from './dom.js';
 
-/**
- * Throttle function - Limita la frecuencia de ejecución
- * @param {Function} func - Función a ejecutar
- * @param {number} limit - Límite de tiempo en ms
- * @returns {Function} Función con throttle
- * 
- * TODO: Implementar throttle
- * Útil para scroll events: no ejecutar en cada pixel de scroll
- */
-export function throttle(func, limit = 100) {
-    // TODO: Implementar throttle
-    let inThrottle;
-    
-    return function executedFunction(...args) {
-        if (!inThrottle) {
-            func(...args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
-}
+export { debounce, debounceImmediate, throttle } from './debounce.js';
 
 /**
  * Lazy loading de imágenes
  * @param {string} selector - Selector CSS de las imágenes
  * 
- * TODO: Implementar lazy loading
  * Usa IntersectionObserver para cargar imágenes solo cuando son visibles
  */
 export function lazyLoadImages(selector = 'img[data-src]') {
-    // TODO: Implementar lazy loading
-    // Pista: Usa IntersectionObserver
-    // Pista: Cuando la imagen es visible, cambia src por data-src
-    
-    const images = document.querySelectorAll(selector);
-    
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                const src = img.getAttribute('data-src');
-                
-                if (src) {
-                    img.src = src;
-                    img.removeAttribute('data-src');
-                    observer.unobserve(img);
-                }
-            }
-        });
+    observeIntersection(document.querySelectorAll(selector), (entry, observer) => {
+        const img = entry.target;
+        const src = img.getAttribute('data-src');
+        
+        if (src) {
+            img.src = src;
+            img.removeAttribute('data-src');
+            observer.unobserve(img);
+        }
     });
-    
-    images.forEach(img => imageObserver.observe(img));
 }
 
 /**

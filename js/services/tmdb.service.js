@@ -51,6 +51,29 @@ export async function fetchFromTMDB(endpoint, params = {}) {
 }
 
 /**
+ * Construir un endpoint reemplazando sus placeholders
+ * @param {string} template - Endpoint con placeholders (ej: '/movie/{movie_id}')
+ * @param {object} values - Valores por placeholder (ej: { movie_id: 123 })
+ * @returns {string} Endpoint listo para usar
+ */
+export function buildEndpoint(template, values = {}) {
+    return Object.entries(values).reduce(
+        (endpoint, [key, value]) => endpoint.replace(`{${key}}`, value),
+        template
+    );
+}
+
+/**
+ * Obtener una lista paginada de un endpoint
+ * @param {string} template - Endpoint con placeholders
+ * @param {object} options - { page, values, params }
+ * @returns {Promise<object>} Respuesta paginada de la API
+ */
+function fetchPaginated(template, { page = 1, values = {}, params = {} } = {}) {
+    return fetchFromTMDB(buildEndpoint(template, values), { page, ...params });
+}
+
+/**
  * Obtener películas populares
  * @param {number} page - Número de página
  * @returns {Promise<object>} Lista de películas populares
@@ -61,7 +84,7 @@ export async function fetchFromTMDB(endpoint, params = {}) {
  * Datos esperados: { page, results: [], total_pages, total_results }
  */
 export async function getPopularMovies(page = 1) {
-    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.MOVIE_POPULAR, { page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.MOVIE_POPULAR, { page });
 }
 
 /**
@@ -73,7 +96,7 @@ export async function getPopularMovies(page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.MOVIE_TOP_RATED
  */
 export async function getTopRatedMovies(page = 1) {
-    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.MOVIE_TOP_RATED, { page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.MOVIE_TOP_RATED, { page });
 }
 
 /**
@@ -85,7 +108,7 @@ export async function getTopRatedMovies(page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.MOVIE_UPCOMING
  */
 export async function getUpcomingMovies(page = 1) {
-    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.MOVIE_UPCOMING, { page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.MOVIE_UPCOMING, { page });
 }
 
 /**
@@ -113,10 +136,10 @@ export async function getNowPlayingMovies(page = 1) {
  * Reemplaza {media_type} y {time_window} en el endpoint
  */
 export async function getTrending(mediaType = 'all', timeWindow = 'day', page = 1) {
-    const endpoint = TMDB_CONFIG.ENDPOINTS.TRENDING
-        .replace('{media_type}', mediaType)
-        .replace('{time_window}', timeWindow);
-    return await fetchFromTMDB(endpoint, { page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.TRENDING, {
+        page,
+        values: { media_type: mediaType, time_window: timeWindow }
+    });
 }
 
 /**
@@ -130,7 +153,7 @@ export async function getTrending(mediaType = 'all', timeWindow = 'day', page = 
  * Datos esperados: title, overview, poster_path, backdrop_path, vote_average, release_date, genres, etc.
  */
 export async function getMovieDetails(movieId) {
-    const endpoint = TMDB_CONFIG.ENDPOINTS.MOVIE_DETAILS.replace('{movie_id}', movieId);
+    const endpoint = buildEndpoint(TMDB_CONFIG.ENDPOINTS.MOVIE_DETAILS, { movie_id: movieId });
     return await fetchFromTMDB(endpoint, { append_to_response: 'credits,videos,similar,recommendations' });
 }
 
@@ -144,8 +167,7 @@ export async function getMovieDetails(movieId) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.MOVIE_SIMILAR
  */
 export async function getSimilarMovies(movieId, page = 1) {
-    const endpoint = TMDB_CONFIG.ENDPOINTS.MOVIE_SIMILAR.replace('{movie_id}', movieId);
-    return await fetchFromTMDB(endpoint, { page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.MOVIE_SIMILAR, { page, values: { movie_id: movieId } });
 }
 
 /**
@@ -158,8 +180,7 @@ export async function getSimilarMovies(movieId, page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.MOVIE_RECOMMENDATIONS
  */
 export async function getMovieRecommendations(movieId, page = 1) {
-    const endpoint = TMDB_CONFIG.ENDPOINTS.MOVIE_RECOMMENDATIONS.replace('{movie_id}', movieId);
-    return await fetchFromTMDB(endpoint, { page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.MOVIE_RECOMMENDATIONS, { page, values: { movie_id: movieId } });
 }
 
 /**
@@ -172,7 +193,7 @@ export async function getMovieRecommendations(movieId, page = 1) {
  * Datos esperados: results: [{ key, name, type, site }] donde type === 'Trailer'
  */
 export async function getMovieVideos(movieId) {
-    const endpoint = TMDB_CONFIG.ENDPOINTS.MOVIE_VIDEOS.replace('{movie_id}', movieId);
+    const endpoint = buildEndpoint(TMDB_CONFIG.ENDPOINTS.MOVIE_VIDEOS, { movie_id: movieId });
     // Usar lenguaje inglés para tener más videos disponibles
     const data = await fetchFromTMDB(endpoint, { language: 'en-US' });
     // Filtrar videos de YouTube de varios tipos (Trailer, Teaser, Clip, Featurette, Behind the Scenes)
@@ -193,7 +214,7 @@ export async function getMovieVideos(movieId) {
  * Datos esperados: { cast: [], crew: [] }
  */
 export async function getMovieCredits(movieId) {
-    const endpoint = TMDB_CONFIG.ENDPOINTS.MOVIE_CREDITS.replace('{movie_id}', movieId);
+    const endpoint = buildEndpoint(TMDB_CONFIG.ENDPOINTS.MOVIE_CREDITS, { movie_id: movieId });
     return await fetchFromTMDB(endpoint);
 }
 
@@ -209,7 +230,7 @@ export async function getMovieCredits(movieId) {
  * Datos esperados: results: [{ media_type, title, name, poster_path, profile_path, etc. }]
  */
 export async function searchMulti(query, page = 1) {
-    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_MULTI, { query, page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.SEARCH_MULTI, { page, params: { query } });
 }
 
 /**
@@ -222,7 +243,7 @@ export async function searchMulti(query, page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.SEARCH_MOVIE
  */
 export async function searchMovies(query, page = 1) {
-    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_MOVIE, { query, page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.SEARCH_MOVIE, { page, params: { query } });
 }
 
 /**
@@ -235,7 +256,7 @@ export async function searchMovies(query, page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.SEARCH_TV
  */
 export async function searchTV(query, page = 1) {
-    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_TV, { query, page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.SEARCH_TV, { page, params: { query } });
 }
 
 /**
@@ -248,7 +269,7 @@ export async function searchTV(query, page = 1) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.SEARCH_PERSON
  */
 export async function searchPeople(query, page = 1) {
-    return await fetchFromTMDB(TMDB_CONFIG.ENDPOINTS.SEARCH_PERSON, { query, page });
+    return await fetchPaginated(TMDB_CONFIG.ENDPOINTS.SEARCH_PERSON, { page, params: { query } });
 }
 
 /**

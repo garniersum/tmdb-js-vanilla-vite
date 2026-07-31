@@ -13,7 +13,7 @@ import { initHomeView } from './views/home.view.js';
 import { initMovieDetailView } from './views/movie-detail.view.js';
 import { initSearchView } from './views/search.view.js';
 import { initFavoritesView, reloadFavorites } from './views/favorites.view.js';
-import { getTheme, setTheme } from './services/storage.service.js';
+import { applyTheme, getCurrentTheme } from './utils/theme.js';
 import { lazyLoadImages } from './utils/helpers.js';
 
 /**
@@ -32,8 +32,7 @@ function initApp() {
     console.log('🎬 Inicializando TMDB Movie App...');
     
     // Aplicar tema guardado
-    const savedTheme = getTheme();
-    document.body.setAttribute('data-theme', savedTheme);
+    applyTheme(getCurrentTheme());
     
     // Inicializar componentes globales
     initNavbar();
