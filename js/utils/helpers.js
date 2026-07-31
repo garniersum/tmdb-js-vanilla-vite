@@ -217,16 +217,20 @@ export function sleep(ms) {
  */
 export async function retryWithBackoff(func, maxRetries = 3, delay = 1000) {
     // TODO: Implementar retry con backoff
+    let lastError;
     for (let i = 0; i < maxRetries; i++) {
         try {
             return await func();
         } catch (error) {
+            lastError = error;
             if (i === maxRetries - 1) {
                 throw error;
             }
             await sleep(delay * Math.pow(2, i));
         }
     }
+    // Nunca retornar undefined silenciosamente (p. ej. si maxRetries < 1)
+    throw lastError ?? new Error('retryWithBackoff: no se ejecutó ningún intento');
 }
 
 /**

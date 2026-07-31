@@ -199,6 +199,7 @@ async function loadMovieCredits(movieId) {
         
     } catch (error) {
         console.error('Error cargando créditos:', error);
+        castGrid.innerHTML = '<p class="section-error">No se pudo cargar el elenco.</p>';
     }
 }
 
@@ -265,6 +266,13 @@ async function loadMovieVideos(movieId) {
         
     } catch (error) {
         console.error('Error cargando videos:', error);
+        const watchTrailerBtn = document.getElementById('watchTrailerBtn');
+        if (watchTrailerBtn) {
+            watchTrailerBtn.disabled = true;
+            watchTrailerBtn.textContent = '❌ Trailer no disponible';
+            watchTrailerBtn.style.opacity = '0.5';
+            watchTrailerBtn.style.cursor = 'not-allowed';
+        }
     }
 }
 
