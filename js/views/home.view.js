@@ -7,10 +7,10 @@
 
 import { getTrending, getPopularMovies, getTopRatedMovies, getUpcomingMovies, getMovieVideos } from '../services/tmdb.service.js';
 import { getBackdropUrl } from '../config/tmdb.config.js';
-import { renderMovieCards, renderSkeletons } from '../components/movie-card.js';
+import { loadMovieGrid } from '../components/movie-grid.js';
 import { openModal } from '../components/modal.js';
 import { navigateTo } from '../services/router.service.js';
-import { lazyLoadImages } from '../utils/helpers.js';
+import { observeIntersection, setActiveInGroup } from '../utils/dom.js';
 
 /**
  * Inicializar vista home
@@ -110,29 +110,11 @@ async function loadHeroSection() {
  */
 async function loadTrendingSection(timeWindow = 'day', page = 1) {
     // TODO: Implementar carga de tendencias
-    const grid = document.getElementById('trendingGrid');
-    
-    if (!grid) return;
-    
-    // Mostrar skeletons
-    renderSkeletons(grid, 4);
-    
-    try {
-        const data = await getTrending('movie', timeWindow, page);
-        
-        // Renderizar películas
-        renderMovieCards(data.results, grid);
-        lazyLoadImages();
-    } catch (error) {
-        console.error('Error cargando tendencias:', error);
-        grid.innerHTML = `
-            <div class="error-state">
-                <div class="error-icon">❌</div>
-                <h3>Error al cargar tendencias</h3>
-                <p>Por favor, intenta nuevamente</p>
-            </div>
-        `;
-    }
+    await loadMovieGrid({
+        gridId: 'trendingGrid',
+        label: 'tendencias',
+        fetchMovies: () => getTrending('movie', timeWindow, page)
+    });
 }
 
 /**
@@ -142,19 +124,11 @@ async function loadTrendingSection(timeWindow = 'day', page = 1) {
  */
 async function loadPopularSection(page = 1) {
     // TODO: Implementar carga de películas populares
-    const grid = document.getElementById('popularGrid');
-    
-    if (!grid) return;
-    
-    renderSkeletons(grid, 4);
-    
-    try {
-        const data = await getPopularMovies(page);
-        renderMovieCards(data.results, grid);
-        lazyLoadImages();
-    } catch (error) {
-        console.error('Error cargando populares:', error);
-    }
+    await loadMovieGrid({
+        gridId: 'popularGrid',
+        label: 'populares',
+        fetchMovies: () => getPopularMovies(page)
+    });
 }
 
 /**
@@ -164,19 +138,11 @@ async function loadPopularSection(page = 1) {
  */
 async function loadTopRatedSection(page = 1) {
     // TODO: Implementar carga de películas top rated
-    const grid = document.getElementById('topRatedGrid');
-    
-    if (!grid) return;
-    
-    renderSkeletons(grid, 4);
-    
-    try {
-        const data = await getTopRatedMovies(page);
-        renderMovieCards(data.results, grid);
-        lazyLoadImages();
-    } catch (error) {
-        console.error('Error cargando top rated:', error);
-    }
+    await loadMovieGrid({
+        gridId: 'topRatedGrid',
+        label: 'top rated',
+        fetchMovies: () => getTopRatedMovies(page)
+    });
 }
 
 /**
@@ -186,19 +152,11 @@ async function loadTopRatedSection(page = 1) {
  */
 async function loadUpcomingSection(page = 1) {
     // TODO: Implementar carga de próximos estrenos
-    const grid = document.getElementById('upcomingGrid');
-    
-    if (!grid) return;
-    
-    renderSkeletons(grid, 4);
-    
-    try {
-        const data = await getUpcomingMovies(page);
-        renderMovieCards(data.results, grid);
-        lazyLoadImages();
-    } catch (error) {
-        console.error('Error cargando upcoming:', error);
-    }
+    await loadMovieGrid({
+        gridId: 'upcomingGrid',
+        label: 'próximos estrenos',
+        fetchMovies: () => getUpcomingMovies(page)
+    });
 }
 
 /**
@@ -212,15 +170,10 @@ function initTabs() {
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Remover active de todos los tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            
-            // Agregar active al tab clickeado
-            tab.classList.add('active');
+            setActiveInGroup(tab, tabs);
             
             // Cargar datos correspondientes
-            const timeWindow = tab.dataset.tab;
-            loadTrendingSection(timeWindow);
+            loadTrendingSection(tab.dataset.tab);
         });
     });
 }
@@ -240,23 +193,14 @@ function initInfiniteScroll() {
     let isLoading = false;
     let currentPage = 1;
     
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !isLoading) {
-                isLoading = true;
-                // TODO: Cargar más películas
-                currentPage++;
-                // loadPopularSection(currentPage);
-                isLoading = false;
-            }
-        });
-    }, {
-        rootMargin: '200px'
-    });
-    
     // Observar el footer o un elemento al final de la página
-    const footer = document.querySelector('.footer');
-    if (footer) {
-        observer.observe(footer);
-    }
+    observeIntersection(document.querySelector('.footer'), () => {
+        if (isLoading) return;
+        
+        isLoading = true;
+        // TODO: Cargar más películas
+        currentPage++;
+        // loadPopularSection(currentPage);
+        isLoading = false;
+    }, { rootMargin: '200px' });
 }

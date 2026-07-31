@@ -5,10 +5,10 @@
  * Muestra todas las películas guardadas como favoritas.
  */
 
-import { getFavorites, removeFavorite } from '../services/storage.service.js';
+import { getFavorites } from '../services/storage.service.js';
 import { renderMovieCards } from '../components/movie-card.js';
-import { navigateTo } from '../services/router.service.js';
 import { lazyLoadImages } from '../utils/helpers.js';
+import { renderEmptyState } from '../utils/ui-state.js';
 /**
  * Inicializar vista de favoritos
  * 
@@ -51,21 +51,19 @@ function loadFavorites() {
 function showEmptyState() {
     // TODO: Implementar mostrado de estado vacío
     const favoritesGrid = document.getElementById('favoritesGrid');
-    
-    if (!favoritesGrid) return;
-    
-    favoritesGrid.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">❤️</div>
-            <h3>No tienes favoritos aún</h3>
-            <p>Agrega películas a tus favoritos para verlas aquí</p>
+
+    renderEmptyState(favoritesGrid, {
+        icon: '❤️',
+        title: 'No tienes favoritos aún',
+        message: 'Agrega películas a tus favoritos para verlas aquí',
+        actionHtml: `
             <button class="btn btn-primary" id="exploreMoviesBtn">
                 Explorar Películas
             </button>
-        </div>
-    `;
-    
-    favoritesGrid.querySelector('#exploreMoviesBtn')?.addEventListener('click', () => {
+        `
+    });
+
+    favoritesGrid?.querySelector('#exploreMoviesBtn')?.addEventListener('click', () => {
         window.location.hash = '#home';
     });
 }

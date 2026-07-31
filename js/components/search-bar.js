@@ -7,8 +7,10 @@
 
 import { debounce } from '../utils/debounce.js';
 import { navigateTo } from '../services/router.service.js';
-import { addToSearchHistory, getSearchHistory, clearSearchHistory } from '../services/storage.service.js';
+import { addToSearchHistory, getSearchHistory } from '../services/storage.service.js';
 import { escapeHtml } from '../utils/helpers.js';
+import { initSearchHistory as bindSearchHistory } from './search-history.js';
+import { onClickOutside } from '../utils/dom.js';
 
 /**
  * Inicializar barra de búsqueda
@@ -52,10 +54,8 @@ export function initSearchBar() {
     });
     
     // Cerrar sugerencias al hacer click fuera
-    document.addEventListener('click', (e) => {
-        if (!searchSuggestions?.contains(e.target) && !searchInput?.contains(e.target)) {
-            searchSuggestions?.classList.remove('active');
-        }
+    onClickOutside([searchSuggestions, searchInput], () => {
+        searchSuggestions?.classList.remove('active');
     });
 }
 
@@ -158,52 +158,7 @@ function performSearch(query) {
  */
 export function initSearchHistory() {
     // TODO: Implementar inicialización de historial
-    const historyList = document.getElementById('historyList');
-    const clearHistoryBtn = document.getElementById('clearHistory');
-    
-    if (!historyList) return;
-    
-    renderSearchHistory();
-    
-    clearHistoryBtn?.addEventListener('click', () => {
-        clearSearchHistory();
-        renderSearchHistory();
-    });
-}
-
-/**
- * Renderizar historial de búsqueda
- * 
- * TODO: Implementar renderizado de historial
- */
-function renderSearchHistory() {
-    // TODO: Implementar renderizado de historial
-    const historyList = document.getElementById('historyList');
-    const searchHistory = document.getElementById('searchHistory');
-    
-    if (!historyList) return;
-    
-    const history = getSearchHistory();
-    
-    if (history.length === 0) {
-        searchHistory?.classList.add('hidden');
-        historyList.innerHTML = ''; 
-        return;
-    }
-    
-    searchHistory?.classList.remove('hidden');
-    
-    historyList.innerHTML = history.map(item => `
-        <span class="history-item" data-query="${escapeHtml(item)}">${escapeHtml(item)}</span>
-    `).join('');
-    
-    // Event listeners para items del historial
-    historyList.querySelectorAll('.history-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const query = item.dataset.query;
-            performSearch(query);
-        });
-    });
+    bindSearchHistory(performSearch);
 }
 
 /**

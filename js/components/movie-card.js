@@ -6,9 +6,29 @@
 
 import { getImageUrl } from '../config/tmdb.config.js';
 import { formatYear, formatRating } from '../utils/formatters.js';
-import { isFavorite, toggleFavorite } from '../services/storage.service.js';
+import { isFavorite } from '../services/storage.service.js';
 import { navigateTo } from '../services/router.service.js';
 import { escapeHtml } from '../utils/helpers.js';
+import { bindFavoriteButton, renderFavoriteLabel } from './favorite-button.js';
+import { renderEmptyState } from '../utils/ui-state.js';
+
+/**
+ * Construir el markup base de una tarjeta con poster
+ * @param {object} data - { posterUrl, title, metaHtml, actionsHtml }
+ * @returns {string} Markup de la tarjeta
+ */
+export function buildPosterCardMarkup({ posterUrl, title, metaHtml = '', actionsHtml = '' }) {
+    return `
+        <div class="movie-poster">
+            <img data-src="${escapeHtml(posterUrl)}" alt="${escapeHtml(title)}">
+        </div>
+        <div class="movie-info">
+            <h3 class="movie-title">${escapeHtml(title)}</h3>
+            <div class="movie-meta">${metaHtml}</div>
+        </div>
+        ${actionsHtml}
+    `;
+}
 
 /**
  * Crear elemento de tarjeta de película
@@ -30,26 +50,24 @@ export function createMovieCard(movie, options = {}) {
     const rating = formatRating(movie.vote_average);
     const isFav = isFavorite(movie.id);
     
-    card.innerHTML = `
-        <div class="movie-poster">
-            <img data-src="${escapeHtml(posterUrl)}" alt="${escapeHtml(movie.title)}">
-        </div>
-        <div class="movie-info">
-            <h3 class="movie-title">${escapeHtml(movie.title)}</h3>
-            <div class="movie-meta">
+    card.innerHTML = buildPosterCardMarkup({
+        posterUrl,
+        title: movie.title,
+        metaHtml: `
                 <span class="movie-year">${escapeHtml(year)}</span>
                 <span class="movie-rating">⭐ ${escapeHtml(rating)}</span>
-            </div>
-        </div>
+        `,
+        actionsHtml: `
         <div class="movie-card-actions">
             <button class="action-btn favorite-btn ${isFav ? 'active' : ''}" data-action="favorite" title="Agregar a favoritos">
-                ${isFav ? '❤️' : '🤍'}
+                ${renderFavoriteLabel(isFav)}
             </button>
             <button class="action-btn" data-action="details" title="Ver detalles">
                 ℹ️
             </button>
         </div>
-    `;
+        `
+    });
     
     // Event listeners
     initCardEvents(card, movie);
@@ -74,13 +92,7 @@ function initCardEvents(card, movie) {
     });
     
     // Botón de favoritos
-    const favoriteBtn = card.querySelector('[data-action="favorite"]');
-    favoriteBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isNowFavorite = toggleFavorite(movie.id, movie);
-        favoriteBtn.classList.toggle('active', isNowFavorite);
-        favoriteBtn.textContent = isNowFavorite ? '❤️' : '🤍';
-    });
+    bindFavoriteButton(card.querySelector('[data-action="favorite"]'), movie, { stopPropagation: true });
     
     // Botón de detalles
     const detailsBtn = card.querySelector('[data-action="details"]');
@@ -105,35 +117,32 @@ export function renderMovieCards(movies, container, options = {}) {
     container.innerHTML = '';
     
     if (!movies || movies.length === 0) {
-        renderEmptyState(container);
+        renderEmptyState(container, {
+            title: 'No hay películas para mostrar',
+            message: 'Intenta con otra búsqueda o categoría'
+        });
         return;
     }
+    
+    appendMovieCards(movies, container, options);
+}
+
+/**
+ * Agregar tarjetas a un contenedor sin limpiar su contenido
+ * @param {Array} movies - Array de películas
+ * @param {HTMLElement} container - Contenedor donde renderizar
+ * @param {object} options - Opciones adicionales
+ */
+export function appendMovieCards(movies, container, options = {}) {
+    if (!container || !movies || movies.length === 0) return;
     
     const fragment = document.createDocumentFragment();
     
     movies.forEach(movie => {
-        const card = createMovieCard(movie, options);
-        fragment.appendChild(card);
+        fragment.appendChild(createMovieCard(movie, options));
     });
     
     container.appendChild(fragment);
-}
-
-/**
- * Renderizar estado vacío
- * @param {HTMLElement} container - Contenedor
- * 
- * TODO: Implementar renderizado de estado vacío
- */
-function renderEmptyState(container) {
-    // TODO: Implementar estado vacío
-    container.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">🎬</div>
-            <h3>No hay películas para mostrar</h3>
-            <p>Intenta con otra búsqueda o categoría</p>
-        </div>
-    `;
 }
 
 /**

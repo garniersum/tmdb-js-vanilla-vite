@@ -106,18 +106,36 @@ export const TMDB_CONFIG = {
 };
 
 /**
- * Helper para construir URLs de imagen
+ * Placeholders usados cuando la API no provee una imagen
+ */
+export const IMAGE_PLACEHOLDERS = {
+    poster: 'https://placehold.co/500x750/1a1a1a/ffffff?text=No+Image',
+    backdrop: 'https://placehold.co/1920x1080/1a1a1a/ffffff?text=No+Backdrop',
+    profile: 'https://placehold.co/185x278/1a1a1a/ffffff?text=No+Photo'
+};
+
+/**
+ * Helper base para construir URLs de imagen de TMDB
  * @param {string} path - Ruta de la imagen (ej: '/abc123.jpg')
  * @param {string} size - Tamaño de la imagen (ej: 'w500')
+ * @param {string} placeholder - URL a usar cuando no hay imagen
  * @returns {string} URL completa de la imagen
  */
-export const getImageUrl = (path, size = TMDB_CONFIG.DEFAULT_IMAGE_SIZE) => {
+export const buildImageUrl = (path, size, placeholder) => {
     if (!path) {
-        // TODO: Puedes cambiar esto por una imagen placeholder
-        return 'https://placehold.co/500x750/1a1a1a/ffffff?text=No+Image';
+        return placeholder;
     }
     return `${TMDB_CONFIG.IMAGE_BASE_URL}/${size}${path}`;
 };
+
+/**
+ * Helper para construir URLs de poster
+ * @param {string} path - Ruta de la imagen
+ * @param {string} size - Tamaño de la imagen
+ * @returns {string} URL completa de la imagen
+ */
+export const getImageUrl = (path, size = TMDB_CONFIG.DEFAULT_IMAGE_SIZE) =>
+    buildImageUrl(path, size, IMAGE_PLACEHOLDERS.poster);
 
 /**
  * Helper para construir URLs de backdrop
@@ -125,12 +143,8 @@ export const getImageUrl = (path, size = TMDB_CONFIG.DEFAULT_IMAGE_SIZE) => {
  * @param {string} size - Tamaño del backdrop
  * @returns {string} URL completa del backdrop
  */
-export const getBackdropUrl = (path, size = TMDB_CONFIG.DEFAULT_BACKDROP_SIZE) => {
-    if (!path) {
-        return 'https://placehold.co/1920x1080/1a1a1a/ffffff?text=No+Backdrop';
-    }
-    return `${TMDB_CONFIG.IMAGE_BASE_URL}/${size}${path}`;
-};
+export const getBackdropUrl = (path, size = TMDB_CONFIG.DEFAULT_BACKDROP_SIZE) =>
+    buildImageUrl(path, size, IMAGE_PLACEHOLDERS.backdrop);
 
 /**
  * Helper para construir URLs de perfil
@@ -138,9 +152,5 @@ export const getBackdropUrl = (path, size = TMDB_CONFIG.DEFAULT_BACKDROP_SIZE) =
  * @param {string} size - Tamaño del perfil
  * @returns {string} URL completa del perfil
  */
-export const getProfileUrl = (path, size = TMDB_CONFIG.DEFAULT_PROFILE_SIZE) => {
-    if (!path) {
-        return 'https://placehold.co/185x278/1a1a1a/ffffff?text=No+Photo';
-    }
-    return `${TMDB_CONFIG.IMAGE_BASE_URL}/${size}${path}`;
-};
+export const getProfileUrl = (path, size = TMDB_CONFIG.DEFAULT_PROFILE_SIZE) =>
+    buildImageUrl(path, size, IMAGE_PLACEHOLDERS.profile);

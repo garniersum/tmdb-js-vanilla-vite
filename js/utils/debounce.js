@@ -1,8 +1,8 @@
 /**
  * Debounce Utility
  * 
- * Implementación específica de debounce para ser usada
- * en la búsqueda y otros eventos que necesitan ser retardados.
+ * Implementación de debounce/throttle para ser usada
+ * en la búsqueda y otros eventos que necesitan ser retardados o limitados.
  */
 
 /**
@@ -57,6 +57,26 @@ export function debounceImmediate(func, wait = 300) {
         
         if (callNow) {
             func(...args);
+        }
+    };
+}
+
+/**
+ * Throttle function - Limita la frecuencia de ejecución
+ * @param {Function} func - Función a ejecutar
+ * @param {number} limit - Límite de tiempo en ms
+ * @returns {Function} Función con throttle
+ * 
+ * Útil para scroll events: no ejecutar en cada pixel de scroll
+ */
+export function throttle(func, limit = 100) {
+    let inThrottle;
+    
+    return function executedFunction(...args) {
+        if (!inThrottle) {
+            func(...args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
         }
     };
 }

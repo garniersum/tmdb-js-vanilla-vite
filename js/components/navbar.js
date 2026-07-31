@@ -6,7 +6,8 @@
  */
 
 import { navigateTo } from '../services/router.service.js';
-import { getTheme, setTheme } from '../services/storage.service.js';
+import { bindThemeToggle } from '../utils/theme.js';
+import { onClickOutside } from '../utils/dom.js';
 
 /**
  * Inicializar el navbar
@@ -21,15 +22,11 @@ import { getTheme, setTheme } from '../services/storage.service.js';
 export function initNavbar() {
     // TODO: Implementar inicialización del navbar
     
-    // Aplicar tema guardado
-    const savedTheme = getTheme();
-    applyTheme(savedTheme);
-    
     // Event listeners para navegación
     initNavigation();
     
-    // Event listener para toggle de tema
-    initThemeToggle();
+    // Aplicar tema guardado y registrar el toggle de tema
+    bindThemeToggle('#themeToggle');
     
     // Event listener para menú móvil
     initMobileMenu();
@@ -59,42 +56,6 @@ function initNavigation() {
 }
 
 /**
- * Inicializar toggle de tema
- * 
- * TODO: Implementar toggle de tema claro/oscuro
- */
-function initThemeToggle() {
-    // TODO: Implementar toggle de tema
-    const themeToggle = document.getElementById('themeToggle');
-    
-    if (!themeToggle) return;
-    
-    themeToggle.addEventListener('click', () => {
-        const currentTheme = getTheme();
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
-        setTheme(newTheme);
-        applyTheme(newTheme);
-    });
-}
-
-/**
- * Aplicar tema
- * @param {string} theme - 'dark' o 'light'
- * 
- * TODO: Implementar aplicación de tema
- */
-function applyTheme(theme) {
-    // TODO: Implementar aplicación de tema
-    document.body.setAttribute('data-theme', theme);
-    
-    const themeIcon = document.querySelector('.theme-icon');
-    if (themeIcon) {
-        themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
-    }
-}
-
-/**
  * Inicializar menú móvil
  * 
  * TODO: Implementar menú hamburguesa para móvil
@@ -119,10 +80,8 @@ function initMobileMenu() {
     });
     
     // Cerrar menú al hacer click fuera
-    document.addEventListener('click', (e) => {
-        if (!navbarMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-            navbarMenu.classList.remove('active');
-        }
+    onClickOutside([navbarMenu, menuToggle], () => {
+        navbarMenu.classList.remove('active');
     });
 }
 

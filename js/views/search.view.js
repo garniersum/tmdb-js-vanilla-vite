@@ -7,10 +7,31 @@
 
 import { searchMulti, searchMovies, searchTV, searchPeople, getPopularMovies, getTopRatedMovies, getUpcomingMovies } from '../services/tmdb.service.js';
 import { getImageUrl } from '../config/tmdb.config.js';
-import { renderMovieCards, renderSkeletons } from '../components/movie-card.js';
-import { getSearchHistory, clearSearchHistory } from '../services/storage.service.js';
+import { buildPosterCardMarkup } from '../components/movie-card.js';
+import { loadMovieGrid } from '../components/movie-grid.js';
+import { initSearchHistory } from '../components/search-history.js';
 import { navigateTo } from '../services/router.service.js';
 import { lazyLoadImages, escapeHtml } from '../utils/helpers.js';
+import { renderEmptyState } from '../utils/ui-state.js';
+import { observeIntersection, setActiveInGroup, appendScrollSentinel } from '../utils/dom.js';
+
+/**
+ * Funciones de búsqueda por tipo de filtro
+ */
+const SEARCH_FETCHERS = {
+    movie: searchMovies,
+    tv: searchTV,
+    person: searchPeople
+};
+
+/**
+ * Listas ordenadas disponibles (para "ver todas")
+ */
+const SORTED_LISTS = {
+    popularity: { title: 'Películas Populares', fetch: getPopularMovies },
+    vote_average: { title: 'Mejor Calificadas', fetch: getTopRatedMovies },
+    release_date: { title: 'Próximos Estrenos', fetch: getUpcomingMovies }
+};
 
 /**
  * Estado de la vista de búsqueda
@@ -56,7 +77,7 @@ export function initSearchView(params = {}) {
     initFilters();
     
     // Inicializar historial
-    initSearchHistory();
+    initSearchHistory(handleHistorySelection);
     
     // Realizar búsqueda si hay query o sort
     if (query) {
@@ -74,6 +95,7 @@ export function initSearchView(params = {}) {
 /**
  * Actualizar título de búsqueda
  * @param {string} query - Término de búsqueda
+ * @param {string} sort - Tipo de ordenamiento
  * 
  * TODO: Implementar actualización de título
  */
@@ -81,19 +103,14 @@ function updateSearchTitle(query, sort = '') {
     // TODO: Implementar actualización de título
     const searchTitle = document.getElementById('searchTitle');
     
-    if (searchTitle) {
-        if (query) {
-            searchTitle.textContent = `Resultados para "${query}"`;
-        } else if (sort) {
-            const titles = {
-                'popularity': 'Películas Populares',
-                'vote_average': 'Mejor Calificadas',
-                'release_date': 'Próximos Estrenos'
-            };
-            searchTitle.textContent = titles[sort] || 'Buscar';
-        } else {
-            searchTitle.textContent = 'Buscar';
-        }
+    if (!searchTitle) return;
+    
+    if (query) {
+        searchTitle.textContent = `Resultados para "${query}"`;
+    } else if (sort) {
+        searchTitle.textContent = SORTED_LISTS[sort]?.title || 'Buscar';
+    } else {
+        searchTitle.textContent = 'Buscar';
     }
 }
 
@@ -108,73 +125,47 @@ function initFilters() {
     
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Remover active de todos los botones
-            filterBtns.forEach(b => b.classList.remove('active'));
-            
-            // Agregar active al botón clickeado
-            btn.classList.add('active');
+            setActiveInGroup(btn, filterBtns);
             
             // Actualizar tipo y realizar búsqueda
-            const type = btn.dataset.filter;
-            searchState.type = type;
+            searchState.type = btn.dataset.filter;
             searchState.page = 1;
             
             if (searchState.query) {
-                performSearch(searchState.query, type, 1);
+                performSearch(searchState.query, searchState.type, 1);
             }
         });
     });
 }
 
 /**
- * Inicializar historial de búsqueda
- * 
- * TODO: Implementar inicialización de historial
+ * Manejar selección de un término del historial
+ * @param {string} query - Término seleccionado
  */
-function initSearchHistory() {
-    // TODO: Implementar inicialización de historial
-    const historyList = document.getElementById('historyList');
-    const clearHistoryBtn = document.getElementById('clearHistory');
-    
-    if (!historyList) return;
-    
-    const history = getSearchHistory();
-    
-    if (history.length === 0) {
-        document.getElementById('searchHistory')?.classList.add('hidden');
-        return;
-    }
-    
-    document.getElementById('searchHistory')?.classList.remove('hidden');
-    
-    historyList.innerHTML = history.map(item => `
-        <span class="history-item" data-query="${escapeHtml(item)}">${escapeHtml(item)}</span>
-    `).join('');
-    
-    // Event listeners para items del historial
-    historyList.querySelectorAll('.history-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const query = item.dataset.query;
-            searchState.query = query;
-            searchState.page = 1;
-            updateSearchTitle(query);
-            performSearch(query, searchState.type, 1);
-        });
-    });
-    
-    // Event listener para limpiar historial
-    clearHistoryBtn?.addEventListener('click', () => {
-        clearSearchHistory();
-        document.getElementById('searchHistory')?.classList.add('hidden');
-    });
+function handleHistorySelection(query) {
+    searchState.query = query;
+    searchState.page = 1;
+    updateSearchTitle(query);
+    performSearch(query, searchState.type, 1);
 }
 
 /**
- * Realizar lista ordenada (para "ver todas")
- * @param {string} sort - Tipo de ordenamiento ('popularity', 'vote_average', 'release_date')
- * @param {number} page - Número de página
+ * Actualizar el estado de paginación con la respuesta de la API
+ * @param {object} data - Respuesta de la API
+ * @param {number} page - Página solicitada
  */
-async function performSortedList(sort, page = 1) {
+function updatePaginationState(data, page) {
+    searchState.results = page === 1 ? data.results : [...searchState.results, ...data.results];
+    searchState.page = data.page;
+    searchState.totalPages = data.total_pages;
+    searchState.hasMore = data.page < data.total_pages;
+}
+
+/**
+ * Cargar resultados en el grid de la vista de búsqueda
+ * @param {object} options - { fetchPage, page, label, filterResults }
+ */
+async function loadResults({ fetchPage, page, label, filterResults = results => results }) {
     const resultsContainer = document.getElementById('searchResults');
     
     if (!resultsContainer) return;
@@ -183,58 +174,50 @@ async function performSortedList(sort, page = 1) {
     if (searchState.isLoading) return;
     searchState.isLoading = true;
     
+    const append = page > 1;
+    let movies = [];
+    
+    if (!append) {
+        resultsContainer.innerHTML = '<div class="movies-grid"></div>';
+    }
+    
     try {
-        let data;
-        
-        // Obtener lista según el tipo de sort
-        switch (sort) {
-            case 'popularity':
-                data = await getPopularMovies(page);
-                break;
-            case 'vote_average':
-                data = await getTopRatedMovies(page);
-                break;
-            case 'release_date':
-                data = await getUpcomingMovies(page);
-                break;
-            default:
-                data = { results: [], page, total_pages: 1 };
-        }
-        
-        // Actualizar estado
-        searchState.results = page === 1 ? data.results : [...searchState.results, ...data.results];
-        searchState.page = data.page;
-        searchState.totalPages = data.total_pages;
-        searchState.hasMore = data.page < data.total_pages;
-        
-        // Renderizar resultados
-        if (page === 1) {
-            resultsContainer.innerHTML = '<div class="movies-grid"></div>';
-            const grid = resultsContainer.querySelector('.movies-grid');
-            renderMovieCards(data.results, grid);
-            lazyLoadImages();
-        } else {
-            const grid = resultsContainer.querySelector('.movies-grid');
-            if (grid) {
-                renderMovieCards(data.results, grid);
-                lazyLoadImages();
+        const loaded = await loadMovieGrid({
+            grid: resultsContainer.querySelector('.movies-grid'),
+            label,
+            append,
+            showSkeletons: false,
+            fetchMovies: async () => {
+                const data = await fetchPage(page);
+                updatePaginationState(data, page);
+                movies = filterResults(data.results || []);
+                return movies;
             }
-        }
+        });
         
-    } catch (error) {
-        console.error('Error cargando lista:', error);
-        if (page === 1) {
-            resultsContainer.innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">❌</div>
-                    <h3>Error al cargar la lista</h3>
-                    <p>Por favor, intenta nuevamente</p>
-                </div>
-            `;
+        if (loaded && !append && movies.length === 0) {
+            showEmptyState();
         }
     } finally {
         searchState.isLoading = false;
     }
+}
+
+/**
+ * Realizar lista ordenada (para "ver todas")
+ * @param {string} sort - Tipo de ordenamiento ('popularity', 'vote_average', 'release_date')
+ * @param {number} page - Número de página
+ */
+async function performSortedList(sort, page = 1) {
+    const fetchList = SORTED_LISTS[sort]?.fetch;
+    
+    await loadResults({
+        page,
+        label: 'la lista',
+        fetchPage: requestedPage => fetchList
+            ? fetchList(requestedPage)
+            : Promise.resolve({ results: [], page: requestedPage, total_pages: 1 })
+    });
 }
 
 /**
@@ -247,100 +230,17 @@ async function performSortedList(sort, page = 1) {
  */
 async function performSearch(query, type = 'all', page = 1) {
     // TODO: Implementar ejecución de búsqueda
-    const resultsContainer = document.getElementById('searchResults');
+    const search = SEARCH_FETCHERS[type] ?? searchMulti;
     
-    if (!resultsContainer) return;
-    
-    // Evitar cargas duplicadas
-    if (searchState.isLoading) return;
-    searchState.isLoading = true;
-    
-    try {
-        let data;
-        
-        // TODO: Llama a la función de búsqueda apropiada según el tipo
-        switch (type) {
-            case 'movie':
-                data = await searchMovies(query, page);
-                break;
-            case 'tv':
-                data = await searchTV(query, page);
-                break;
-            case 'person':
-                data = await searchPeople(query, page);
-                break;
-            default:
-                data = await searchMulti(query, page);
-        }
-        
-        // Actualizar estado
-        searchState.results = page === 1 ? data.results : [...searchState.results, ...data.results];
-        searchState.page = data.page;
-        searchState.totalPages = data.total_pages;
-        searchState.hasMore = data.page < data.total_pages;
-        
-        // Renderizar resultados
-        if (page === 1) {
-            renderSearchResults(data.results, type);
-        } else {
-            const grid = resultsContainer.querySelector('.movies-grid');
-            if (grid) {
-                renderMovieCards(data.results.filter(item => item.media_type === 'movie'), grid);
-                lazyLoadImages();
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error en búsqueda:', error);
-        if (page === 1) {
-            resultsContainer.innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">❌</div>
-                    <h3>Error en la búsqueda</h3>
-                    <p>Por favor, intenta nuevamente</p>
-                </div>
-            `;
-        }
-    } finally {
-        searchState.isLoading = false;
-    }
-}
-
-/**
- * Renderizar resultados de búsqueda
- * @param {Array} results - Resultados de búsqueda
- * @param {string} type - Tipo de resultados
- * 
- * TODO: Implementar renderizado de resultados
- */
-function renderSearchResults(results, type) {
-    // TODO: Implementar renderizado de resultados
-    const resultsContainer = document.getElementById('searchResults');
-    
-    if (!resultsContainer) return;
-    
-    if (!results || results.length === 0) {
-        showEmptyState();
-        return;
-    }
-    
-    // Crear grid horizontal
-    resultsContainer.innerHTML = '<div class="movies-grid"></div>';
-    const grid = resultsContainer.querySelector('.movies-grid');
-    
-    // Filtrar resultados según el tipo
-    let filteredResults = results;
-    
-    if (type === 'all') {
-        // En búsqueda multi, filtrar por media_type (solo películas para el grid)
-        filteredResults = results.filter(item => 
-            item.media_type === 'movie' || item.media_type === 'tv'
-        );
-    }
-    
-    // Renderizar como tarjetas de película
-    renderMovieCards(filteredResults, grid);
-    lazyLoadImages();
+    await loadResults({
+        page,
+        label: 'la búsqueda',
+        fetchPage: requestedPage => search(query, requestedPage),
+        // En búsqueda multi solo se muestran películas y series en el grid
+        filterResults: results => type === 'all'
+            ? results.filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+            : results
+    });
 }
 
 /**
@@ -360,20 +260,15 @@ function createSearchResultCard(item) {
     const title = isPerson ? item.name : (item.title || item.name);
     const date = isPerson ? null : (item.release_date || item.first_air_date);
     const posterPath = isPerson ? item.profile_path : item.poster_path;
-    const posterUrl = getImageUrl(posterPath, 'w500');
     
-    card.innerHTML = `
-        <div class="movie-poster">
-            <img data-src="${escapeHtml(posterUrl)}" alt="${escapeHtml(title)}">
-        </div>
-        <div class="movie-info">
-            <h3 class="movie-title">${escapeHtml(title)}</h3>
-            <div class="movie-meta">
+    card.innerHTML = buildPosterCardMarkup({
+        posterUrl: getImageUrl(posterPath, 'w500'),
+        title,
+        metaHtml: `
                 <span class="movie-year">${escapeHtml(date ? date.split('-')[0] : '')}</span>
                 <span class="movie-type">${isPerson ? '👤 Persona' : (item.media_type === 'tv' ? '📺 Serie' : '🎬 Película')}</span>
-            </div>
-        </div>
-    `;
+        `
+    });
     
     // Event listener para click
     card.addEventListener('click', () => {
@@ -396,51 +291,29 @@ function createSearchResultCard(item) {
  */
 function showEmptyState() {
     // TODO: Implementar mostrado de estado vacío
-    const resultsContainer = document.getElementById('searchResults');
-    
-    if (!resultsContainer) return;
-    
-    resultsContainer.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">🔍</div>
-            <h3>No se encontraron resultados</h3>
-            <p>Intenta con otro término de búsqueda</p>
-        </div>
-    `;
+    renderEmptyState(document.getElementById('searchResults'), {
+        icon: '🔍',
+        title: 'No se encontraron resultados',
+        message: 'Intenta con otro término de búsqueda'
+    });
 }
 
 /**
  * Inicializar infinite scroll
  */
 function initInfiniteScroll() {
-    const options = {
+    const sentinel = appendScrollSentinel(document.getElementById('searchResults'));
+    
+    // Guardar observer para limpieza
+    searchState.observer = observeIntersection(sentinel, () => {
+        if (searchState.hasMore && !searchState.isLoading) {
+            loadMoreResults();
+        }
+    }, {
         root: null,
         rootMargin: '200px',
         threshold: 0.1
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && searchState.hasMore && !searchState.isLoading) {
-                loadMoreResults();
-            }
-        });
-    }, options);
-    
-    // Crear elemento sentinel al final de los resultados
-    const sentinel = document.createElement('div');
-    sentinel.className = 'scroll-sentinel';
-    sentinel.style.height = '50px';
-    sentinel.style.visibility = 'hidden';
-    
-    const resultsContainer = document.getElementById('searchResults');
-    if (resultsContainer) {
-        resultsContainer.appendChild(sentinel);
-        observer.observe(sentinel);
-    }
-    
-    // Guardar observer para limpieza
-    searchState.observer = observer;
+    });
 }
 
 /**
@@ -449,12 +322,18 @@ function initInfiniteScroll() {
 async function loadMoreResults() {
     if (!searchState.hasMore || searchState.isLoading) return;
     
-    const nextPage = searchState.page + 1;
-    
+    await loadSearchPage(searchState.page + 1);
+}
+
+/**
+ * Cargar una página según el estado actual (búsqueda o lista ordenada)
+ * @param {number} page - Página a cargar
+ */
+async function loadSearchPage(page) {
     if (searchState.sort) {
-        await performSortedList(searchState.sort, nextPage);
+        await performSortedList(searchState.sort, page);
     } else if (searchState.query) {
-        await performSearch(searchState.query, searchState.type, nextPage);
+        await performSearch(searchState.query, searchState.type, page);
     }
 }
 
@@ -471,22 +350,14 @@ function initPagination() {
     prevBtn?.addEventListener('click', () => {
         if (searchState.page > 1) {
             searchState.page--;
-            if (searchState.sort) {
-                performSortedList(searchState.sort, searchState.page);
-            } else if (searchState.query) {
-                performSearch(searchState.query, searchState.type, searchState.page);
-            }
+            loadSearchPage(searchState.page);
         }
     });
     
     nextBtn?.addEventListener('click', () => {
         if (searchState.page < searchState.totalPages) {
             searchState.page++;
-            if (searchState.sort) {
-                performSortedList(searchState.sort, searchState.page);
-            } else if (searchState.query) {
-                performSearch(searchState.query, searchState.type, searchState.page);
-            }
+            loadSearchPage(searchState.page);
         }
     });
 }
