@@ -306,8 +306,8 @@ export async function getTVGenres() {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.PERSON_DETAILS
  */
 export async function getPersonDetails(personId) {
-    // TODO: Implementar consumo de endpoint de detalles de persona
-    throw new Error('getPersonDetails no implementado aún');
+    const endpoint = TMDB_CONFIG.ENDPOINTS.PERSON_DETAILS.replace('{person_id}', personId);
+    return await fetchFromTMDB(endpoint, { append_to_response: 'images,combined_credits' });
 }
 
 /**
@@ -319,8 +319,8 @@ export async function getPersonDetails(personId) {
  * Endpoint: TMDB_CONFIG.ENDPOINTS.PERSON_CREDITS
  */
 export async function getPersonCredits(personId) {
-    // TODO: Implementar consumo de endpoint de créditos de persona
-    throw new Error('getPersonCredits no implementado aún');
+    const endpoint = TMDB_CONFIG.ENDPOINTS.PERSON_CREDITS.replace('{person_id}', personId);
+    return await fetchFromTMDB(endpoint);
 }
 
 /**

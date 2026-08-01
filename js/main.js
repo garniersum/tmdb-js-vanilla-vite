@@ -11,6 +11,7 @@ import { initSearchBar, initSearchHistory } from './components/search-bar.js';
 import { initModal } from './components/modal.js';
 import { initHomeView } from './views/home.view.js';
 import { initMovieDetailView } from './views/movie-detail.view.js';
+import { initPersonDetailView } from './views/person-detail.view.js';
 import { initSearchView } from './views/search.view.js';
 import { initFavoritesView, reloadFavorites } from './views/favorites.view.js';
 import { applyTheme, getCurrentTheme } from './utils/theme.js';
@@ -79,6 +80,12 @@ function handleRouteChange(routeInfo) {
             showView('movieDetailView');
             const movieId = parseInt(params.id);
             initMovieDetailView(movieId);
+            break;
+            
+        case 'person':
+            showView('personDetailView');
+            const personId = parseInt(params.id);
+            initPersonDetailView(personId);
             break;
             
         case 'tv':

@@ -310,6 +310,126 @@
     align-items: center;
 }
 
+/* Person Detail View */
+.person-detail-header {
+    padding: var(--spacing-2xl) var(--container-padding);
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+}
+
+.person-detail-content {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: var(--spacing-2xl);
+    align-items: start;
+}
+
+.person-detail-photo {
+    position: sticky;
+    top: var(--spacing-2xl);
+}
+
+.person-profile-img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    background-color: var(--color-bg-tertiary);
+}
+
+.person-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.person-detail-name {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.person-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+}
+
+.person-birthday,
+.person-deathday,
+.person-place,
+.person-department {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.person-also-known {
+    background-color: var(--color-bg-secondary);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.person-also-known h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.person-also-known p {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+.person-biography {
+    background-color: var(--color-bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+}
+
+.person-biography h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.person-biography p {
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+}
+
+.person-detail-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+}
+
+.person-detail-section {
+    padding: var(--spacing-2xl) var(--container-padding);
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+}
+
+.person-detail-section-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.movie-character {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-xs);
+    font-style: italic;
+}
+
 /* Animations */
 @keyframes fadeIn {
     from {
@@ -357,14 +477,30 @@
     .movie-detail-stats {
         gap: var(--spacing-md);
     }
-
-    .cast-grid {
-        /* grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); */
-    }
     
     .search-title,
     .favorites-title {
         font-size: var(--font-size-2xl);
+    }
+    
+    /* Person Detail View Responsive */
+    .person-detail-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .person-detail-photo {
+        position: static;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .person-detail-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .person-detail-meta {
+        flex-direction: column;
+        gap: var(--spacing-sm);
     }
 }
 
@@ -374,13 +510,25 @@
         gap: var(--spacing-sm);
     }
     
+    /* Person Detail View Responsive Small */
+    .person-detail-name {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .person-detail-photo {
+        max-width: 250px;
+    }
+    
+    .person-biography,
+    .person-also-known {
+        padding: var(--spacing-md);
+    }
+    
     .stat-value {
         font-size: var(--font-size-xl);
     }
 
-
     .cast-grid {
-        /* grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); */
         gap: var(--spacing-md);
     }
 }

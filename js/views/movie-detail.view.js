@@ -11,9 +11,11 @@ import { formatDate, formatRuntime, formatRating, formatGenres } from '../utils/
 import { loadMovieGrid } from '../components/movie-grid.js';
 import { bindFavoriteButton, renderFavoriteLabel } from '../components/favorite-button.js';
 import { openModal } from '../components/modal.js';
-import { isFavorite } from '../services/storage.service.js';
-import { escapeHtml } from '../utils/helpers.js';
+import { escapeHtml, lazyLoadImages } from '../utils/helpers.js';
 import { renderLoadingState, renderErrorState } from '../utils/ui-state.js';
+import { isFavorite, toggleFavorite } from '../services/storage.service.js';
+import { navigateTo } from '../services/router.service.js';
+
 
 /**
  * Inicializar vista de detalles de película
@@ -221,9 +223,15 @@ function renderCast(cast) {
     }
     
     castGrid.innerHTML = cast.slice(0, 10).map(actor => `
+<<<<<<< HEAD
         <div class="cast-card">
             <img src="${escapeHtml(getProfileUrl(actor.profile_path, 'w185'))}" 
                  alt="${escapeHtml(actor.name)}" 
+=======
+        <div class="cast-card" data-person-id="${actor.id}">
+            <img src="${actor.profile_path ? getImageUrl(actor.profile_path, 'w185') : 'https://placehold.co/185x278/1a1a1a/ffffff?text=No+Photo'}" 
+                 alt="${actor.name}" 
+>>>>>>> 501e7fb (feat: implement person details view)
                  class="cast-photo"
                  loading="lazy">
             <div class="cast-info">
@@ -232,6 +240,18 @@ function renderCast(cast) {
             </div>
         </div>
     `).join('');
+    
+    // Agregar event listeners a las tarjetas de actores
+    const castCards = castGrid.querySelectorAll('.cast-card');
+    castCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const personId = parseInt(card.dataset.personId);
+            navigateTo('person', { id: personId });
+        });
+        
+        // Agregar cursor pointer para indicar clickeable
+        card.style.cursor = 'pointer';
+    });
 }
 
 /**
