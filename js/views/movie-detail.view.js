@@ -221,17 +221,12 @@ function renderCast(cast) {
         castGrid.innerHTML = '<p>No hay información del elenco disponible.</p>';
         return;
     }
-    
+
     castGrid.innerHTML = cast.slice(0, 10).map(actor => `
-<<<<<<< HEAD
-        <div class="cast-card">
-            <img src="${escapeHtml(getProfileUrl(actor.profile_path, 'w185'))}" 
-                 alt="${escapeHtml(actor.name)}" 
-=======
+        
         <div class="cast-card" data-person-id="${actor.id}">
             <img src="${actor.profile_path ? getImageUrl(actor.profile_path, 'w185') : 'https://placehold.co/185x278/1a1a1a/ffffff?text=No+Photo'}" 
                  alt="${actor.name}" 
->>>>>>> 501e7fb (feat: implement person details view)
                  class="cast-photo"
                  loading="lazy">
             <div class="cast-info">
