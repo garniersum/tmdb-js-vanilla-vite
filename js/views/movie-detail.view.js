@@ -54,7 +54,7 @@ async function loadMovieDetails(movieId) {
     try {
         const movie = await getMovieDetails(movieId);
         renderMovieDetails(movie);
-
+        
         // Cargar créditos/elenco
         loadMovieCredits(movieId);
         
@@ -197,7 +197,7 @@ async function loadMovieCredits(movieId) {
     
     try {
         const credits = await getMovieCredits(movieId);
-        renderCast(credits.cast);
+        renderCast(credits.cast);        
         
     } catch (error) {
         console.error('Error cargando créditos:', error);
@@ -225,10 +225,9 @@ function renderCast(cast) {
     castGrid.innerHTML = cast.slice(0, 10).map(actor => `
         
         <div class="cast-card" data-person-id="${actor.id}">
-            <img src="${actor.profile_path ? getImageUrl(actor.profile_path, 'w185') : 'https://placehold.co/185x278/1a1a1a/ffffff?text=No+Photo'}" 
+            <img data-src="${actor.profile_path ? getImageUrl(actor.profile_path, 'w185') : 'https://placehold.co/185x278/1a1a1a/ffffff?text=No+Photo'}" 
                  alt="${actor.name}" 
-                 class="cast-photo"
-                 loading="lazy">
+                 class="cast-photo">
             <div class="cast-info">
                 <h4 class="cast-name">${escapeHtml(actor.name)}</h4>
                 <p class="cast-character">${escapeHtml(actor.character)}</p>
@@ -247,6 +246,7 @@ function renderCast(cast) {
         // Agregar cursor pointer para indicar clickeable
         card.style.cursor = 'pointer';
     });
+    
 }
 
 /**
@@ -337,6 +337,6 @@ function showError(message) {
         message,
         actionHtml: '<button class="btn btn-primary" id="errorBackBtn">Volver</button>'
     });
-
+    
     container?.querySelector('#errorBackBtn')?.addEventListener('click', () => window.history.back());
 }
