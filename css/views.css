@@ -495,7 +495,7 @@
     }
     
     .person-detail-stats {
-        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
     }
     
     .person-detail-meta {
